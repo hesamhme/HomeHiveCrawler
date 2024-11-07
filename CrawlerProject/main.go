@@ -22,7 +22,6 @@ func main() {
 		&Model.Listing{},
 		&Model.Filter{},
 		&Model.Bookmark{},
-		&Model.Notification{},
 		&Model.SearchHistory{},
 		&Model.AdminLog{},
 		&Model.CrawlerLog{},
