@@ -17,8 +17,10 @@ type Listing struct {
 	Floor        *string
 	HasStorage   bool
 	HasElevator  bool
+	Source       string     `gorm:"size:100"` // e.g., "divar", "sheypoor"
+	URL          string     `gorm:"type:text"`
+	ExpiresAt    *time.Time `gorm:"null"` // Expiration date of the listing
+	Images       []string   `gorm:"-"`    // Placeholder for associated images
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
-	Source       string `gorm:"size:100"` // e.g., "divar", "sheypoor"
-	URL          string `gorm:"type:text"`
 }
