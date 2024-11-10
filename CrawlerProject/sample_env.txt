@@ -1,0 +1,6 @@
+# Database Configurations
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=crawler_db
+DB_USER=user
+DB_PASSWORD=QPdb7e3m
