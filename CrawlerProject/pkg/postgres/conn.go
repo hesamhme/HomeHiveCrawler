@@ -18,7 +18,6 @@ type DBConnection struct {
 
 func NewDBConnection(host string, port string, dbName string, user string, password string) *DBConnection {
 	return &DBConnection{
-		// "host=localhost user=user password=QPdb7e3m dbname=crawler_db port=5432 sslmode=disable"
 		Host:     host,
 		Port:     port,
 		User:     user,
