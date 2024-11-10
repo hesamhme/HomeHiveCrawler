@@ -5,7 +5,7 @@ import (
 )
 
 type User struct {
-	TelegramID   int        `gorm:"primaryKey"` // Use TelegramID as the primary key
+	TelegramID   uint64     `gorm:"primaryKey"` // Use TelegramID as the primary key
 	Username     string     `gorm:"size:100;not null;unique"`
 	Role         string     `gorm:"size:20;not null"`                  // e.g., "admin", "user", "superadmin"
 	Status       string     `gorm:"size:20;not null;default:'active'"` // active, inactive, suspended
