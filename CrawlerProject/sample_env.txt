@@ -4,3 +4,5 @@ DB_PORT=5432
 DB_NAME=crawler_db
 DB_USER=user
 DB_PASSWORD=QPdb7e3m
+# Telegram bot token
+TG_TOKEN=8096414698:AAH7ox_ZZkUNSF0fO82kbKsKe3g514Uo2Mc
