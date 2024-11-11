@@ -1,6 +1,7 @@
 package main
 
 import (
+	"CrawlerProject/internal/bot"
 	"CrawlerProject/internal/repository"
 	"CrawlerProject/pkg/config"
 	"CrawlerProject/pkg/logger"
@@ -28,6 +29,12 @@ func main() {
 
 	// repositories
 
-
 	log.Println("Database tables created/migrated successfully!")
+
+	// telegram bot
+
+	err = bot.SetupBot(config.TGToken)
+	if err != nil {
+		return
+	}
 }

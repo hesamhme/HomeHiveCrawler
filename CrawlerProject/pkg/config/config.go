@@ -4,7 +4,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-
 type Config struct {
 	Port       int    `mapstructure:"PORT"`
 	DBHost     string `mapstructure:"DB_HOST"`
@@ -12,6 +11,7 @@ type Config struct {
 	DBName     string `mapstructure:"DB_NAME"`
 	DBPassword string `mapstructure:"DB_PASSWORD"`
 	DBUser     string `mapstructure:"DB_USER"`
+	TGToken    string `mapstructure:"TG_TOKEN"`
 }
 
 func InitConfig() (*Config, error) {
