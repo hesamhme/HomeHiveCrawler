@@ -20,3 +20,10 @@ go run main.go
 therefore you should see thin on terminal output
 
 > Database tables created/migrated successfully!  
+
+
+## Telegram Bot
+
+User can communicate with our telegram bot to get ads
+
+[Telegram Bot 🔗](https://t.me/quera11_bot)
