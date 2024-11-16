@@ -29,7 +29,7 @@ func main() {
 	}
 
 	// repositories
-
+		
 	//service.ReadFromJson(localDB)
 	listings, err := service.GetListings(localDB)
 	if err != nil {
