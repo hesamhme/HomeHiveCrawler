@@ -1,0 +1,24 @@
+database:
+  development:
+    host: localhost
+    port: 5432
+    user: user
+    password: QPdb7e3m
+    dbname: crawler_db
+    sslmode: disable
+
+  testing:
+    host: localhost
+    port: 5432
+    user: test_user
+    password: test_password
+    dbname: test_db
+    sslmode: disable
+
+  # production:
+  #   host: prod-db-host
+  #   port: 5432
+  #   user: prod_user
+  #   password: prod_password
+  #   dbname: prod_db
+  #   sslmode: require
