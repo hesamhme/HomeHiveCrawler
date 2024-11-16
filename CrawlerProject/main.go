@@ -7,8 +7,14 @@ import (
 	"CrawlerProject/pkg/config"
 	"CrawlerProject/pkg/logger"
 	p "CrawlerProject/pkg/postgres"
+	"context"
 	"log"
 	"os"
+	"time"
+
+	"golang.org/x/exp/rand"
+
+	cr "CrawlerProject/internal/crawler"
 )
 
 func main() {
@@ -20,7 +26,7 @@ func main() {
 	db := p.NewDBConnection(config.DBHost, config.DBPort, config.DBName, config.DBUser, config.DBPassword)
 	localDB, err := db.InitConnection()
 	if err != nil {
-		logger.Logger.Error().Err(err).Msg("error while initialise database connection")
+		logger.Logger.Error().Err(err).Msg("error while initalise database connection")
 		os.Exit(3)
 	}
 	d := repository.NewDatabase(localDB)
@@ -29,22 +35,29 @@ func main() {
 	}
 
 	// repositories
-		
-	//service.ReadFromJson(localDB)
-	listings, err := service.GetListings(localDB)
-	if err != nil {
-		log.Fatal("error while getting listings")
-	}
-	log.Printf("%d listings have been loaded", len(listings))
 
 	log.Println("Database tables created/migrated successfully!")
+	service.SetDefaultDB(localDB)
 
-	// bot
-	bot.SetDB(localDB)
+	// telegram bot
 
 	err = bot.SetupBot(config.TGToken)
 	if err != nil {
 		return
 	}
+	// crawler
+	rand.Seed(uint64(time.Now().UnixNano()))
 
+	// Create crawler with default config
+	crawlerConfig := cr.DefaultConfig()
+	crawler := cr.NewCrawler(crawlerConfig)
+
+	// Create context with cancellation
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Start the crawler
+	if err := crawler.Start(ctx); err != nil {
+		log.Fatal(err)
+	}
 }

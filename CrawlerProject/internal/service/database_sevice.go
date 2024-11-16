@@ -11,8 +11,17 @@ import (
 	"CrawlerProject/internal/model"
 )
 
+var defaultDB *gorm.DB
+
+func SetDefaultDB(db *gorm.DB) {
+	defaultDB = db
+}
+
 // GetListings fetches all listings from the database.
 func GetListings(db *gorm.DB) ([]model.Listing, error) {
+	if db == nil {
+		db = defaultDB
+	}
 	var listings []model.Listing
 	if err := db.Find(&listings).Error; err != nil {
 		return nil, fmt.Errorf("failed to fetch listings: %w", err)
@@ -22,9 +31,12 @@ func GetListings(db *gorm.DB) ([]model.Listing, error) {
 
 // StoreListing saves or updates a single listing in the database.
 func StoreListing(db *gorm.DB, listing model.Listing) error {
+	if db == nil {
+		db = defaultDB
+	}
 	// Check for an existing listing with the same Link.
 	var existingListing model.Listing
-	err := db.Where("link = ?", listing.Link).First(&existingListing).Error
+	err := db.Where("link = ?", listing.URL).First(&existingListing).Error
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("failed to query existing listing: %w", err)
 	}
@@ -46,6 +58,9 @@ func StoreListing(db *gorm.DB, listing model.Listing) error {
 
 // StoreAllListings reads listings from a JSON file and saves/updates them in the database.
 func StoreAllListings(db *gorm.DB, filePath string) error {
+	if db == nil {
+		db = defaultDB
+	}
 	// Open the JSON file.
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -62,7 +77,7 @@ func StoreAllListings(db *gorm.DB, filePath string) error {
 	// Iterate through each listing and save/update it.
 	for _, listing := range listings {
 		if err := StoreListing(db, listing); err != nil {
-			fmt.Printf("failed to store listing with link %s: %v\n", listing.Link, err)
+			fmt.Printf("failed to store listing with link %s: %v\n", listing.URL, err)
 		}
 	}
 	return nil
