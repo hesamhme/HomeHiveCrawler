@@ -29,7 +29,6 @@ func main() {
     }
 
     // repositories
-
     service.ReadFromJson(localDB)
 
     log.Println("Database tables created/migrated successfully!")

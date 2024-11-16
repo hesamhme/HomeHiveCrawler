@@ -5,8 +5,10 @@ import (
 	"CrawlerProject/internal/service"
 	"fmt"
 	"log"
-	"strings"
 	"strconv"
+	"strings"
+	"time"
+
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"gorm.io/gorm"
 )
@@ -87,15 +89,70 @@ func runBot(bot *tgbotapi.BotAPI, updateConfig tgbotapi.UpdateConfig) {
 		// Check if user is in a specific state
 		if state, exists := userState[chatID]; exists {
 			if state == "awaiting_city_input" {
-				handleCitySearch(bot, update.Message, db) // Assuming `db` is your GORM DB instance
-				delete(userState, chatID)                 // Clear user state after handling
+				handleCitySearch(bot, update.Message, db)
+				delete(userState, chatID)
 				continue
 			}
 			if state == "awaiting_price_range_input" {
-				handlePriceRangeSearch(bot, update.Message, db) // Assuming `db` is your GORM DB instance
-				delete(userState, chatID)                 // Clear user state after handling
+				handlePriceRangeSearch(bot, update.Message, db)
+				delete(userState, chatID)
 				continue
 			}
+			// handleNeighborhoodSearch
+			if state == "awaiting_neighborhood_input" {
+				handleNeighborhoodSearch(bot, update.Message, db)
+				delete(userState, chatID)
+				continue
+			}
+			// handleAreaRangeSearch
+			if state == "awaiting_area_range_input" {
+				handleAreaRangeSearch(bot, update.Message, db)
+				delete(userState, chatID)
+				continue
+			}
+			// handleBedroomCountSearch
+			if state == "awaiting_bedroom_count_input" {
+				handleBedroomCountSearch(bot, update.Message, db)
+				delete(userState, chatID)
+				continue
+			}
+
+			if state == "awaiting_building_age_input" {
+				handleBuildingAgeSearch(bot, update.Message, db)
+				delete(userState, chatID)
+				continue
+			}
+			if state == "awaiting_building_type_input" {
+				handleBuildingTypeSearch(bot, update.Message, db)
+				delete(userState, chatID)
+				continue
+			}
+			if state == "awaiting_floor_range_input" {
+				handleFloorRangeSearch(bot, update.Message, db)
+				delete(userState, chatID)
+				continue
+			}
+			if state == "awaiting_storage_input" {
+				handleStorageSearch(bot, update.Message, db)
+				delete(userState, chatID)
+				continue
+			}
+			if state == "awaiting_elevator_input" {
+				handleElevatorSearch(bot, update.Message, db)
+				delete(userState, chatID)
+				continue
+			}
+			if state == "awaiting_ad_creation_date_input" {
+				handleAdCreationDateSearch(bot, update.Message, db)
+				delete(userState, chatID)
+				continue
+			}
+			if state == "awaiting_rent_buy_mortgage_input" {
+				handleRentBuyMortgageSearch(bot, update.Message, db)
+				delete(userState, chatID)
+				continue
+			}
+
 		}
 
 		go func() {
@@ -141,7 +198,7 @@ func runBot(bot *tgbotapi.BotAPI, updateConfig tgbotapi.UpdateConfig) {
 			handleAreaRange(bot, update.Message)
 		case "بازه تعداد اتاق خواب":
 			handleBedroomCount(bot, update.Message)
-		case " اجاره، خرید، رهن":
+		case "اجاره، خرید، رهن":
 			handleRentBuyMortgage(bot, update.Message)
 		case "رنج سن بنا":
 			handleBuildingAge(bot, update.Message)
@@ -230,59 +287,59 @@ func handleAccount(bot *tgbotapi.BotAPI, update *tgbotapi.Update) {
 }
 
 func handlePriceRange(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
-    msg := tgbotapi.NewMessage(message.Chat.ID, "لطفا رنج قیمت مورد نظر خود را به صورت (شروع,پایان) وارد نمایید")
-    bot.Send(msg)
+	msg := tgbotapi.NewMessage(message.Chat.ID, "لطفا رنج قیمت مورد نظر خود را به صورت (شروع,پایان) وارد نمایید")
+	bot.Send(msg)
 
-    // Set user state to expect price range input (assuming you are using userState map)
-    userState[message.Chat.ID] = "awaiting_price_range_input"
+	// Set user state to expect price range input (assuming you are using userState map)
+	userState[message.Chat.ID] = "awaiting_price_range_input"
 }
 
 func handlePriceRangeSearch(bot *tgbotapi.BotAPI, message *tgbotapi.Message, db *gorm.DB) {
-    // Parse input to extract minimum and maximum price
-    var minPrice, maxPrice float64
-    input := strings.Split(message.Text, ",")
-    if len(input) != 2 {
-        msg := tgbotapi.NewMessage(message.Chat.ID, "ورودی نامعتبر است. لطفا رنج قیمت را به صورت (شروع,پایان) وارد نمایید")
-        bot.Send(msg)
-        return
-    }
-    
-    // Attempt to parse the input values to floats
-    var err error
-    minPrice, err = strconv.ParseFloat(strings.TrimSpace(input[0]), 64)
-    if err != nil {
-        msg := tgbotapi.NewMessage(message.Chat.ID, "مقدار شروع معتبر نیست.")
-        bot.Send(msg)
-        return
-    }
-    maxPrice, err = strconv.ParseFloat(strings.TrimSpace(input[1]), 64)
-    if err != nil {
-        msg := tgbotapi.NewMessage(message.Chat.ID, "مقدار پایان معتبر نیست.")
-        bot.Send(msg)
-        return
-    }
+	// Parse input to extract minimum and maximum price
+	var minPrice, maxPrice float64
+	input := strings.Split(message.Text, ",")
+	if len(input) != 2 {
+		msg := tgbotapi.NewMessage(message.Chat.ID, "ورودی نامعتبر است. لطفا رنج قیمت را به صورت (شروع,پایان) وارد نمایید")
+		bot.Send(msg)
+		return
+	}
 
-    // Create filters for price range
-    filters := model.Filter{
-        PriceMin: minPrice,
-        PriceMax: maxPrice,
-    }
+	// Attempt to parse the input values to floats
+	var err error
+	minPrice, err = strconv.ParseFloat(strings.TrimSpace(input[0]), 64)
+	if err != nil {
+		msg := tgbotapi.NewMessage(message.Chat.ID, "مقدار شروع معتبر نیست.")
+		bot.Send(msg)
+		return
+	}
+	maxPrice, err = strconv.ParseFloat(strings.TrimSpace(input[1]), 64)
+	if err != nil {
+		msg := tgbotapi.NewMessage(message.Chat.ID, "مقدار پایان معتبر نیست.")
+		bot.Send(msg)
+		return
+	}
 
-    // Execute the search query
-    results, err := service.GetFilteredListings(db, filters)
-    if err != nil {
-        msg := tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("خطا در جستجوی اطلاعات: %v", err))
-        bot.Send(msg)
-        return
-    }
+	// Create filters for price range
+	filters := model.Filter{
+		PriceMin: minPrice,
+		PriceMax: maxPrice,
+	}
 
-    if len(results) == 0 {
-        msg := tgbotapi.NewMessage(message.Chat.ID, "هیچ نتیجه ای برای رنج قیمت مورد نظر پیدا نشد")
-        bot.Send(msg)
-        return
-    }
+	// Execute the search query
+	results, err := service.GetFilteredListings(db, filters)
+	if err != nil {
+		msg := tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("خطا در جستجوی اطلاعات: %v", err))
+		bot.Send(msg)
+		return
+	}
 
-    // Send the results
+	if len(results) == 0 {
+		msg := tgbotapi.NewMessage(message.Chat.ID, "هیچ نتیجه ای برای رنج قیمت مورد نظر پیدا نشد")
+		bot.Send(msg)
+		return
+	}
+
+	// Send the results
 	sendFormattedListings(bot, message.Chat.ID, results)
 }
 
@@ -313,45 +370,474 @@ func handleCitySearch(bot *tgbotapi.BotAPI, message *tgbotapi.Message, db *gorm.
 		return
 	}
 
-    sendFormattedListings(bot, message.Chat.ID, results)
+	sendFormattedListings(bot, message.Chat.ID, results)
 }
 
 func handleNeighborhood(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
-	//TODO filter based on neighborhood
+	msg := tgbotapi.NewMessage(message.Chat.ID, "لطفاً نام محله مورد نظر خود را وارد کنید:")
+	bot.Send(msg)
+
+	// Set user state to expect neighborhood input (assuming you are using userState map)
+	userState[message.Chat.ID] = "awaiting_neighborhood_input"
+}
+
+func handleNeighborhoodSearch(bot *tgbotapi.BotAPI, message *tgbotapi.Message, db *gorm.DB) {
+	// Extract the neighborhood name from the user's message
+	neighborhood := strings.TrimSpace(message.Text)
+
+	// Create a filter for the search query
+	filters := model.Filter{
+		Neighborhood: neighborhood,
+	}
+
+	// Query the database using the specified filter
+	results, err := service.GetFilteredListings(db, filters)
+	if err != nil {
+		msg := tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("خطا در جستجوی اطلاعات: %v", err))
+		bot.Send(msg)
+		return
+	}
+
+	if len(results) == 0 {
+		msg := tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("هیچ نتیجه ای برای محله %s یافت نشد", neighborhood))
+		bot.Send(msg)
+		return
+	}
+
+	// Use the helper function to format and send results
+	sendFormattedListings(bot, message.Chat.ID, results)
 }
 
 func handleAreaRange(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
-	//TODO filter based on area range
+	msg := tgbotapi.NewMessage(message.Chat.ID, "لطفاً محدوده مساحت مورد نظر خود را به صورت (شروع,پایان) وارد نمایید:")
+	bot.Send(msg)
+
+	// Set user state to expect area range input (assuming you are using a userState map)
+	userState[message.Chat.ID] = "awaiting_area_range_input"
+}
+
+func handleAreaRangeSearch(bot *tgbotapi.BotAPI, message *tgbotapi.Message, db *gorm.DB) {
+	// Parse input to extract minimum and maximum area
+	var minArea, maxArea float64
+	input := strings.Split(message.Text, ",")
+	if len(input) != 2 {
+		msg := tgbotapi.NewMessage(message.Chat.ID, "ورودی نامعتبر است. لطفا محدوده مساحت را به صورت (شروع,پایان) وارد نمایید")
+		bot.Send(msg)
+		return
+	}
+
+	// Attempt to parse the input values to floats
+	var err error
+	minArea, err = strconv.ParseFloat(strings.TrimSpace(input[0]), 64)
+	if err != nil {
+		msg := tgbotapi.NewMessage(message.Chat.ID, "مقدار شروع معتبر نیست.")
+		bot.Send(msg)
+		return
+	}
+	maxArea, err = strconv.ParseFloat(strings.TrimSpace(input[1]), 64)
+	if err != nil {
+		msg := tgbotapi.NewMessage(message.Chat.ID, "مقدار پایان معتبر نیست.")
+		bot.Send(msg)
+		return
+	}
+
+	// Create filters for area range
+	filters := model.Filter{
+		AreaMin: minArea,
+		AreaMax: maxArea,
+	}
+
+	// Execute the search query
+	results, err := service.GetFilteredListings(db, filters)
+	if err != nil {
+		msg := tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("خطا در جستجوی اطلاعات: %v", err))
+		bot.Send(msg)
+		return
+	}
+
+	if len(results) == 0 {
+		msg := tgbotapi.NewMessage(message.Chat.ID, "هیچ نتیجه ای برای محدوده مساحت مورد نظر یافت نشد")
+		bot.Send(msg)
+		return
+	}
+
+	// Use the helper function to format and send results
+	sendFormattedListings(bot, message.Chat.ID, results)
 }
 
 func handleBedroomCount(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
-	//TODO filter based on bedroom count
+	msg := tgbotapi.NewMessage(message.Chat.ID, "لطفاً تعداد اتاق خواب مورد نظر خود را به صورت (حداقل,حداکثر) وارد نمایید:")
+	bot.Send(msg)
+
+	// Set user state to expect bedroom count input (assuming you are using a userState map)
+	userState[message.Chat.ID] = "awaiting_bedroom_count_input"
 }
 
-func handleRentBuyMortgage(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
-	//TODO filter based on mortgage
+func handleBedroomCountSearch(bot *tgbotapi.BotAPI, message *tgbotapi.Message, db *gorm.DB) {
+	// Parse input to extract minimum and maximum bedroom count
+	var minRooms, maxRooms int
+	input := strings.Split(message.Text, ",")
+	if len(input) != 2 {
+		msg := tgbotapi.NewMessage(message.Chat.ID, "ورودی نامعتبر است. لطفا تعداد اتاق خواب را به صورت (حداقل,حداکثر) وارد نمایید")
+		bot.Send(msg)
+		return
+	}
+
+	// Attempt to parse the input values to integers
+	var err error
+	minRooms, err = strconv.Atoi(strings.TrimSpace(input[0]))
+	if err != nil {
+		msg := tgbotapi.NewMessage(message.Chat.ID, "مقدار حداقل تعداد اتاق معتبر نیست.")
+		bot.Send(msg)
+		return
+	}
+	maxRooms, err = strconv.Atoi(strings.TrimSpace(input[1]))
+	if err != nil {
+		msg := tgbotapi.NewMessage(message.Chat.ID, "مقدار حداکثر تعداد اتاق معتبر نیست.")
+		bot.Send(msg)
+		return
+	}
+
+	// Create filters for bedroom count
+	filters := model.Filter{
+		RoomsMin: minRooms,
+		RoomsMax: maxRooms,
+	}
+
+	// Execute the search query
+	results, err := service.GetFilteredListings(db, filters)
+	if err != nil {
+		msg := tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("خطا در جستجوی اطلاعات: %v", err))
+		bot.Send(msg)
+		return
+	}
+
+	if len(results) == 0 {
+		msg := tgbotapi.NewMessage(message.Chat.ID, "هیچ نتیجه ای برای محدوده تعداد اتاق خواب مورد نظر یافت نشد")
+		bot.Send(msg)
+		return
+	}
+
+	// Use the helper function to format and send results
+	sendFormattedListings(bot, message.Chat.ID, results)
+}
+
+func handleRentBuyMortgage(bot *tgbotapi.BotAPI, update *tgbotapi.Message) {
+	msg := tgbotapi.NewMessage(update.Chat.ID, "لطفاً نوع مورد نظر خود را وارد کنید: خرید/ فروش / اجاره / رهن / اجاره و رهن")
+	bot.Send(msg)
+	userState[update.Chat.ID] = "awaiting_rent_buy_mortgage_input"
+}
+
+func handleRentBuyMortgageSearch(bot *tgbotapi.BotAPI, message *tgbotapi.Message, db *gorm.DB) {
+	// Extract the user's input and trim whitespace
+	input := strings.TrimSpace(message.Text)
+
+	// Create filters for status (ad type)
+	filters := model.Filter{}
+
+	// Special handling for "اجاره و رهن"
+	if input == "اجاره و رهن" {
+		filters.Status = "اجاره و رهن" // Special case identifier
+	} else {
+		filters.Status = input // Direct assignment for other cases
+	}
+
+	// Execute the search query
+	results, err := service.GetFilteredListings(db, filters)
+	if err != nil {
+		msg := tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("خطا در جستجوی اطلاعات: %v", err))
+		bot.Send(msg)
+		return
+	}
+
+	if len(results) == 0 {
+		msg := tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("هیچ نتیجه ای برای وضعیت %s یافت نشد", input))
+		bot.Send(msg)
+		return
+	}
+
+	// Use the helper function to format and send results
+	sendFormattedListings(bot, message.Chat.ID, results)
 }
 
 func handleBuildingAge(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
-	//TODO filter based on building age
+    msg := tgbotapi.NewMessage(message.Chat.ID, "لطفاً محدوده سن بنا را به صورت (حداقل,حداکثر) وارد کنید:")
+    bot.Send(msg)
+
+    // Set user state to expect building age range input
+    userState[message.Chat.ID] = "awaiting_building_age_input"
 }
+
+func handleBuildingAgeSearch(bot *tgbotapi.BotAPI, message *tgbotapi.Message, db *gorm.DB) {
+    input := strings.Split(message.Text, ",")
+    if len(input) != 2 {
+        msg := tgbotapi.NewMessage(message.Chat.ID, "ورودی نامعتبر است. لطفاً محدوده سن بنا را به صورت (حداقل,حداکثر) وارد نمایید.")
+        bot.Send(msg)
+        return
+    }
+
+    // Parse the input values for min and max age
+    var minAge, maxAge int
+    var err error
+    minAge, err = strconv.Atoi(strings.TrimSpace(input[0]))
+    if err != nil {
+        msg := tgbotapi.NewMessage(message.Chat.ID, "مقدار حداقل سن بنا معتبر نیست.")
+        bot.Send(msg)
+        return
+    }
+    maxAge, err = strconv.Atoi(strings.TrimSpace(input[1]))
+    if err != nil {
+        msg := tgbotapi.NewMessage(message.Chat.ID, "مقدار حداکثر سن بنا معتبر نیست.")
+        bot.Send(msg)
+        return
+    }
+
+    // Convert ages to match the formula (age = 1403 - age)
+    currentYear := 1403
+    filters := model.Filter{
+        BuildingAgeMin: currentYear - maxAge,
+        BuildingAgeMax: currentYear - minAge,
+    }
+
+    results, err := service.GetFilteredListings(db, filters)
+    if err != nil {
+        msg := tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("خطا در جستجوی اطلاعات: %v", err))
+        bot.Send(msg)
+        return
+    }
+
+    if len(results) == 0 {
+        msg := tgbotapi.NewMessage(message.Chat.ID, "هیچ نتیجه ای برای محدوده سن بنا مورد نظر یافت نشد")
+        bot.Send(msg)
+        return
+    }
+
+    sendFormattedListings(bot, message.Chat.ID, results)
+}
+
 
 func handleBuildingType(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
-	//TODO filter based on building type
+    msg := tgbotapi.NewMessage(message.Chat.ID, "  لطفاً نوع ملک مورد نظر خود را وارد کنید آپارتمان/ویلایی/غیره:")
+    bot.Send(msg)
+
+    // Set user state to expect building type input
+    userState[message.Chat.ID] = "awaiting_building_type_input"
 }
+
+func handleBuildingTypeSearch(bot *tgbotapi.BotAPI, message *tgbotapi.Message, db *gorm.DB) {
+    propertyType := strings.TrimSpace(message.Text)
+
+    filters := model.Filter{
+        PropertyType: propertyType,
+    }
+
+    results, err := service.GetFilteredListings(db, filters)
+    if err != nil {
+        msg := tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("خطا در جستجوی اطلاعات: %v", err))
+        bot.Send(msg)
+        return
+    }
+
+    if len(results) == 0 {
+        msg := tgbotapi.NewMessage(message.Chat.ID, "هیچ نتیجه ای برای نوع ملک وارد شده یافت نشد")
+        bot.Send(msg)
+        return
+    }
+
+    sendFormattedListings(bot, message.Chat.ID, results)
+}
+
+
 
 func handleFloorRange(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
-	//TODO filter based on floor range
+    msg := tgbotapi.NewMessage(message.Chat.ID, "لطفاً محدوده طبقه را به صورت (حداقل,حداکثر) وارد کنید:")
+    bot.Send(msg)
+
+    // Set user state to expect floor range input
+    userState[message.Chat.ID] = "awaiting_floor_range_input"
 }
+
+func handleFloorRangeSearch(bot *tgbotapi.BotAPI, message *tgbotapi.Message, db *gorm.DB) {
+    input := strings.Split(message.Text, ",")
+    if len(input) != 2 {
+        msg := tgbotapi.NewMessage(message.Chat.ID, "ورودی نامعتبر است. لطفاً محدوده طبقه را به صورت (حداقل,حداکثر) وارد نمایید.")
+        bot.Send(msg)
+        return
+    }
+
+    var minFloor, maxFloor int
+    var err error
+    minFloor, err = strconv.Atoi(strings.TrimSpace(input[0]))
+    if err != nil {
+        msg := tgbotapi.NewMessage(message.Chat.ID, "مقدار حداقل طبقه معتبر نیست.")
+        bot.Send(msg)
+        return
+    }
+    maxFloor, err = strconv.Atoi(strings.TrimSpace(input[1]))
+    if err != nil {
+        msg := tgbotapi.NewMessage(message.Chat.ID, "مقدار حداکثر طبقه معتبر نیست.")
+        bot.Send(msg)
+        return
+    }
+
+    filters := model.Filter{
+        FloorMin: &minFloor,
+        FloorMax: &maxFloor,
+    }
+
+    results, err := service.GetFilteredListings(db, filters)
+    if err != nil {
+        msg := tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("خطا در جستجوی اطلاعات: %v", err))
+        bot.Send(msg)
+        return
+    }
+
+    if len(results) == 0 {
+        msg := tgbotapi.NewMessage(message.Chat.ID, "هیچ نتیجه ای برای محدوده طبقه مورد نظر یافت نشد")
+        bot.Send(msg)
+        return
+    }
+
+    sendFormattedListings(bot, message.Chat.ID, results)
+}
+
 
 func handleStorage(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
-	//TODO filter based on storage
+    msg := tgbotapi.NewMessage(message.Chat.ID, "آیا ملک دارای انباری باشد؟ (بله/خیر)")
+    bot.Send(msg)
+
+    // Set user state to expect storage preference input
+    userState[message.Chat.ID] = "awaiting_storage_input"
 }
+
+func handleStorageSearch(bot *tgbotapi.BotAPI, message *tgbotapi.Message, db *gorm.DB) {
+    input := strings.TrimSpace(message.Text)
+
+    // Convert input to a boolean
+    var hasStorage bool
+    if input == "بله" {
+        hasStorage = true
+    } else if input == "خیر" {
+        hasStorage = false
+    } else {
+        msg := tgbotapi.NewMessage(message.Chat.ID, "ورودی نامعتبر است. لطفاً 'بله' یا 'خیر' وارد کنید.")
+        bot.Send(msg)
+        return
+    }
+
+    filters := model.Filter{
+        HasStorage: hasStorage,
+    }
+
+    results, err := service.GetFilteredListings(db, filters)
+    if err != nil {
+        msg := tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("خطا در جستجوی اطلاعات: %v", err))
+        bot.Send(msg)
+        return
+    }
+
+    if len(results) == 0 {
+        msg := tgbotapi.NewMessage(message.Chat.ID, "هیچ نتیجه ای برای وضعیت انباری مورد نظر یافت نشد")
+        bot.Send(msg)
+        return
+    }
+
+    sendFormattedListings(bot, message.Chat.ID, results)
+}
+
 
 func handleElevator(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
-	//TODO filter based on elevator
+    msg := tgbotapi.NewMessage(message.Chat.ID, "آیا ملک دارای آسانسور باشد؟ (بله/خیر)")
+    bot.Send(msg)
+
+    // Set user state to expect elevator preference input
+    userState[message.Chat.ID] = "awaiting_elevator_input"
 }
 
-func handleAdCreationDate(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
-	//TODO filter based on creation date
+func handleElevatorSearch(bot *tgbotapi.BotAPI, message *tgbotapi.Message, db *gorm.DB) {
+    input := strings.TrimSpace(message.Text)
+
+    // Convert input to a boolean
+    var hasElevator bool
+    if input == "بله" {
+        hasElevator = true
+    } else if input == "خیر" {
+        hasElevator = false
+    } else {
+        msg := tgbotapi.NewMessage(message.Chat.ID, "ورودی نامعتبر است. لطفاً 'بله' یا 'خیر' وارد کنید.")
+        bot.Send(msg)
+        return
+    }
+
+    filters := model.Filter{
+        HasElevator: hasElevator,
+    }
+
+    results, err := service.GetFilteredListings(db, filters)
+    if err != nil {
+        msg := tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("خطا در جستجوی اطلاعات: %v", err))
+        bot.Send(msg)
+        return
+    }
+
+    if len(results) == 0 {
+        msg := tgbotapi.NewMessage(message.Chat.ID, "هیچ نتیجه ای برای وضعیت آسانسور مورد نظر یافت نشد")
+        bot.Send(msg)
+        return
+    }
+
+    sendFormattedListings(bot, message.Chat.ID, results)
 }
+
+
+func handleAdCreationDate(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
+    msg := tgbotapi.NewMessage(message.Chat.ID, "لطفاً محدوده تاریخ درج آگهی را به صورت (شروع,پایان) وارد کنید (YYYY-MM-DD):")
+    bot.Send(msg)
+
+    // Set user state to expect ad creation date range input
+    userState[message.Chat.ID] = "awaiting_ad_creation_date_input"
+}
+
+func handleAdCreationDateSearch(bot *tgbotapi.BotAPI, message *tgbotapi.Message, db *gorm.DB) {
+    input := strings.Split(message.Text, ",")
+    if len(input) != 2 {
+        msg := tgbotapi.NewMessage(message.Chat.ID, "ورودی نامعتبر است. لطفاً محدوده تاریخ را به صورت (شروع,پایان) به فرمت YYYY-MM-DD وارد نمایید.")
+        bot.Send(msg)
+        return
+    }
+
+    // Parse the input dates
+    startDate, err := time.Parse("2006-01-02", strings.TrimSpace(input[0]))
+    if err != nil {
+        msg := tgbotapi.NewMessage(message.Chat.ID, "تاریخ شروع معتبر نیست. لطفاً به فرمت YYYY-MM-DD وارد نمایید.")
+        bot.Send(msg)
+        return
+    }
+    endDate, err := time.Parse("2006-01-02", strings.TrimSpace(input[1]))
+    if err != nil {
+        msg := tgbotapi.NewMessage(message.Chat.ID, "تاریخ پایان معتبر نیست. لطفاً به فرمت YYYY-MM-DD وارد نمایید.")
+        bot.Send(msg)
+        return
+    }
+
+    filters := model.Filter{
+        CreationDateMin: startDate,
+        CreationDateMax: endDate,
+    }
+
+    results, err := service.GetFilteredListings(db, filters)
+    if err != nil {
+        msg := tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("خطا در جستجوی اطلاعات: %v", err))
+        bot.Send(msg)
+        return
+    }
+
+    if len(results) == 0 {
+        msg := tgbotapi.NewMessage(message.Chat.ID, "هیچ نتیجه ای برای محدوده تاریخ درج آگهی مورد نظر یافت نشد")
+        bot.Send(msg)
+        return
+    }
+
+    sendFormattedListings(bot, message.Chat.ID, results)
+}
+
