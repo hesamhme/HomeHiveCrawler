@@ -6,8 +6,14 @@ import (
 	"CrawlerProject/pkg/config"
 	"CrawlerProject/pkg/logger"
 	p "CrawlerProject/pkg/postgres"
+	"context"
 	"log"
 	"os"
+	"time"
+
+	"golang.org/x/exp/rand"
+
+	cr "CrawlerProject/internal/crawler"
 )
 
 func main() {
@@ -36,5 +42,20 @@ func main() {
 	err = bot.SetupBot(config.TGToken)
 	if err != nil {
 		return
+	}
+	// crawler
+	rand.Seed(uint64(time.Now().UnixNano()))
+
+	// Create crawler with default config
+	crawlerConfig := cr.DefaultConfig()
+	crawler := cr.NewCrawler(crawlerConfig)
+
+	// Create context with cancellation
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Start the crawler
+	if err := crawler.Start(ctx); err != nil {
+		log.Fatal(err)
 	}
 }

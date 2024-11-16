@@ -9,26 +9,26 @@ import (
 
 type Crawler struct {
 	// Configuration
-	config CrawlerConfig
+	Config CrawlerConfig
 
 	// State management
-	lastRunTime time.Time
-	runMutex    sync.Mutex
+	LastRunTime time.Time
+	RunMutex    sync.Mutex
 
 	// Resource monitoring
 	// monitor *ResourceMonitor
-	goroutineMonitor *GoroutineMonitor
+	GoroutineMonitor *GoroutineMonitor
 
 	// Concurrency control
-	urlSemaphore chan struct{}
-	adsSemaphore chan struct{}
+	UrlSemaphore chan struct{}
+	AdsSemaphore chan struct{}
 
 	// Error handling
-	errorChan chan error
+	ErrorChan chan error
 
 	// Results management
-	resultsChan chan HouseAd
-	adsMutex    sync.Mutex
+	ResultsChan chan Listing
+	AdsMutex    sync.Mutex
 }
 
 type CrawlerConfig struct {
@@ -53,23 +53,23 @@ type CrawlerConfig struct {
 	ChromeFlags []chromedp.ExecAllocatorOption
 }
 
-type HouseAd struct {
-	Title        string    `json:"title"`
-	Price        uint64    `json:"price"`
-	Location     string    `json:"location"`
-	Description  string    `json:"description"`
-	Link         string    `json:"link"`
-	Seller       string    `json:"seller"`
-	City         string    `json:"city"`
-	Neighborhood string    `json:"neighborhood"`
-	Meterage     int       `json:"meterage"`
-	Bedrooms     int       `json:"bedrooms"`
-	AdType       string    `json:"adType"`
-	Age          string    `json:"age"`
-	HouseType    string    `json:"houseType"`
-	Floor        int       `json:"floor"`
-	WareHouse    bool      `json:"warehouse"`
-	Elevator     bool      `json:"elevator"`
-	AdCreateDate time.Time `json:"adCreateDate"`
-	Images       []string  `json:"images"`
-}
+// type HouseAd struct {
+// 	Title        string    `json:"title"`
+// 	Price        uint64    `json:"price"`
+// 	Location     string    `json:"location"`
+// 	Description  string    `json:"description"`
+// 	Link         string    `json:"link"`
+// 	Seller       string    `json:"seller"`
+// 	City         string    `json:"city"`
+// 	Neighborhood string    `json:"neighborhood"`
+// 	Meterage     int       `json:"meterage"`
+// 	Bedrooms     int       `json:"bedrooms"`
+// 	AdType       string    `json:"adType"`
+// 	Age          string    `json:"age"`
+// 	HouseType    string    `json:"houseType"`
+// 	Floor        int       `json:"floor"`
+// 	WareHouse    bool      `json:"warehouse"`
+// 	Elevator     bool      `json:"elevator"`
+// 	AdCreateDate time.Time `json:"adCreateDate"`
+// 	Images       []string  `json:"images"`
+// }

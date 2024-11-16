@@ -7,59 +7,34 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"sync"
 	"time"
+
+	model "CrawlerProject/internal/model"
 
 	"github.com/shirou/gopsutil/process"
 )
 
-type GoroutineMonitor struct {
-	Stats    map[int64]*GoroutineStats
-	StatsMux sync.RWMutex
-	Done     chan struct{}
+type MyGoroutineMonitor struct {
+	model.GoroutineMonitor
 }
 
-type GoroutineStats struct {
-	GoroutineID    int64       `json:"goroutine_id"`
-	StartTime      time.Time   `json:"start_time"`
-	EndTime        time.Time   `json:"end_time"`
-	URL            string      `json:"url"`
-	City           string      `json:"city"`
-	Type           string      `json:"type"`
-	NumAdsFound    int         `json:"num_ads_found"`
-	CPUUsage       []CPUSample `json:"cpu_usage"`
-	MemoryUsage    []MemSample `json:"memory_usage"`
-	PeakMemoryUsed uint64      `json:"peak_memory_used"`
-	AvgCPUUsed     float64     `json:"avg_cpu_used"`
-	Duration       float64     `json:"duration_seconds"`
-}
-
-type CPUSample struct {
-	Timestamp time.Time `json:"timestamp"`
-	Usage     float64   `json:"usage"`
-}
-
-type MemSample struct {
-	Timestamp time.Time `json:"timestamp"`
-	UsageKB   uint64    `json:"usage_kb"`
-}
-
-func NewGoroutineMonitor() *GoroutineMonitor {
-	return &GoroutineMonitor{
-		Stats: make(map[int64]*GoroutineStats),
+func NewGoroutineMonitor() *model.GoroutineMonitor{
+	return &model.GoroutineMonitor{
+		Stats: make(map[int64]*model.GoroutineStats),
 		Done:  make(chan struct{}),
 	}
+	
 }
 
 // StartTracking begins monitoring a new goroutine
-func (gm *GoroutineMonitor) StartTracking(city, _type string) *GoroutineStats {
-	stats := &GoroutineStats{
+func (gm *MyGoroutineMonitor) StartTracking(city, _type string) *model.GoroutineStats {
+	stats := &model.GoroutineStats{
 		GoroutineID: time.Now().UnixNano(), // Use timestamp as unique ID
 		StartTime:   time.Now(),
 		City:        city,
 		Type:        _type,
-		CPUUsage:    make([]CPUSample, 0),
-		MemoryUsage: make([]MemSample, 0),
+		CPUUsage:    make([]model.CPUSample, 0),
+		MemoryUsage: make([]model.MemSample, 0),
 	}
 
 	gm.StatsMux.Lock()
@@ -73,7 +48,7 @@ func (gm *GoroutineMonitor) StartTracking(city, _type string) *GoroutineStats {
 }
 
 // StopTracking ends monitoring for a goroutine
-func (gm *GoroutineMonitor) StopTracking(goroutineID int64) {
+func (gm *MyGoroutineMonitor) StopTracking(goroutineID int64) {
 	gm.StatsMux.Lock()
 	if stats, exists := gm.Stats[goroutineID]; exists {
 		stats.EndTime = time.Now()
@@ -92,7 +67,7 @@ func (gm *GoroutineMonitor) StopTracking(goroutineID int64) {
 }
 
 // monitorResources continuously monitors resource usage for a goroutine
-func (gm *GoroutineMonitor) monitorResources(goroutineID int64) {
+func (gm *MyGoroutineMonitor) monitorResources(goroutineID int64) {
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 
@@ -105,7 +80,7 @@ func (gm *GoroutineMonitor) monitorResources(goroutineID int64) {
 				runtime.ReadMemStats(&m)
 
 				// Record memory sample
-				memSample := MemSample{
+				memSample := model.MemSample{
 					Timestamp: time.Now(),
 					UsageKB:   m.Alloc / 1024,
 				}
@@ -117,7 +92,7 @@ func (gm *GoroutineMonitor) monitorResources(goroutineID int64) {
 				}
 
 				// Record CPU sample (simplified version)
-				cpuSample := CPUSample{
+				cpuSample := model.CPUSample{
 					Timestamp: time.Now(),
 					Usage:     getCPUUsage(), // You'll need to implement this
 				}
@@ -132,7 +107,7 @@ func (gm *GoroutineMonitor) monitorResources(goroutineID int64) {
 }
 
 // SaveStats saves the monitoring statistics to a file
-func (gm *GoroutineMonitor) SaveStats(outputDir string) error {
+func (gm *MyGoroutineMonitor) SaveStats(outputDir string) error {
 	if err := os.MkdirAll(outputDir, 0755); err != nil {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}

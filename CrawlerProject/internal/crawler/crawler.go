@@ -13,12 +13,15 @@ import (
 	"sync"
 	"time"
 
+	model "CrawlerProject/internal/model"
+
 	"github.com/chromedp/chromedp"
 	"golang.org/x/exp/rand"
-	model "CrawlerProject/internal/model"
 )
 
-
+type MyCrawler struct {
+	model.Crawler
+}
 
 var persianDigitMap = map[rune]rune{
 	'۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4',
@@ -62,19 +65,20 @@ var persianToLatinDigits = map[rune]rune{
 }
 
 func NewCrawler(config model.CrawlerConfig) *model.Crawler {
-	return &Crawler{
-		config:           config,
-		urlSemaphore:     make(chan struct{}, config.MaxURLConcurrency),
-		adsSemaphore:     make(chan struct{}, config.MaxAdConcurrency),
-		errorChan:        make(chan error, len(config.Cities)*len(config.Types)),
-		resultsChan:      make(chan HouseAd, 10000),
-		goroutineMonitor: NewGoroutineMonitor(),
+	return &model.Crawler{
+		// Crawler: model.Crawler{
+		Config:           config,
+		UrlSemaphore:     make(chan struct{}, config.MaxURLConcurrency),
+		AdsSemaphore:     make(chan struct{}, config.MaxAdConcurrency),
+		ErrorChan:        make(chan error, len(config.Cities)*len(config.Types)),
+		ResultsChan:      make(chan model.Listing, 10000),
+		GoroutineMonitor: NewGoroutineMonitor(),
 	}
 }
 
 // DefaultConfig returns the default configuration
-func DefaultConfig() CrawlerConfig {
-	return CrawlerConfig{
+func DefaultConfig() model.CrawlerConfig {
+	return model.CrawlerConfig{
 		RunInterval:        5 * time.Hour,
 		MinTimeBetweenRuns: time.Duration(float64(5*time.Hour) * 0.9),
 		PageTimeout:        30 * time.Minute,
@@ -85,8 +89,8 @@ func DefaultConfig() CrawlerConfig {
 		Cities: []string{"yazd"},
 		// Cities:             []string{"tabriz", "azarshahr", "ahar", "bonab", "sarab", "sahand", "maragheh", "marand", "mianeh", "urmia", "oshnavieh", "bukan", "piranshahr", "khoy", "sardasht", "salmas", "shahin-dej", "maku", "mahabad", "miandoab", "naqadeh", "ardabil", "parsabad", "khalkhal", "sarein", "germi", "meshgin-shahr", "namin", "isfahan", "aran-va-bidgol", "abrisham-isfahan", "khomeyni-shahr", "khansar", "khour", "daran", "semirom", "shahin-shahr", "falavarjan", "foolad-shahr", "ghamsar", "kashan", "golpayegan", "lenjan", "mobarakeh", "najafabad", "karaj", "asara", "eshtehard", "tankaman", "charbagh-alborz", "taleqan", "fardis", "koohsar", "garmdareh", "mahdasht", "mohammad-shahr", "nazarabad", "hashtgerd", "abdanan", "ilam", "eyvan", "dehloran", "mehran", "borazjan", "dayyer", "bandar-kangan", "bandar-ganaveh", "bushehr", "jam", "khormoj", "tehran", "absard", "abali", "arjmand", "eslamshahr", "andisheh-new-town", "baghershahr", "bumehen", "pakdasht", "pardis", "parand", "pishva", "javadabad", "chahar-dangeh", "damavand", "robat-karim", "rudehen", "shahr-e-rey", "shahedshahr", "shemshak", "shahriar", "sabashahr", "safadasht-industrial-city", "ferdosiye", "fasham", "firuzkooh", "qods", "qarchak", "kahrizak", "kilan", "golestan-baharestan", "lavasan", "nasimshahr", "vahidieh", "varamin", "boroujen", "saman", "shahrekord", "farrokhshahr", "lordegan", "birjand", "tabas", "ferdows", "ghayen", "mashhad", "bardaskan", "taybad", "torbat-jam", "torbat-heydariyeh", "chenaran", "khaf", "sabzevar", "shandiz", "torghabeh", "qasemabad-khaf", "quchan", "golbahar", "gonabad", "molkabad", "neyshabur", "ashkhaneh", "esfarāyen", "bojnurd", "shirvan", "ahvaz", "abadan", "omidiyeh", "andimeshk", "izeh", "bandar-imam-khomeini", "bandar-mahshahr", "behbahan", "chamran-town", "hamidiyeh", "khorramshahr", "dezful", "ramshir", "ramhormoz", "susangerd", "shadeghan", "shush", "shooshtar", "masjed-soleyman", "hendijan", "abhar", "khorramdarreh", "zanjan", "qeydar", "damghan", "semnan", "shahroud", "garmsar", "iranshahr", "chabahar", "khash", "zabol", "zahedan", "zahak", "saravan", "konarak", "shiraz", "abadeh", "eqlid", "jahrom", "khoour", "darab", "zarghan", "sadra", "fasa", "firuzabad", "kazeroon", "lar", "lamerd", "marvdasht", "mohr", "norabad", "neyriz", "abyek", "eqbaliyeh", "alvand", "takestan", "shal", "qazvin", "mohammadiyeh", "qom", "baneh", "bijar", "dehgolan", "saqqez", "sanandaj", "qorveh", "kamyaran", "marivan", "baft", "bardsir", "boluk", "bam", "jiroft", "rafsanjan", "zarand", "sirjan", "kerman", "kahnooj", "mahan", "kermanshah", "eslamabad-gharb", "bisotun", "javanrud", "sarpol-zahab", "sonqor", "sahneh", "kangavar", "gahvareh", "harsin", "dogonbadan", "dehdasht", "sisakht", "yasuj", "azadshahr-golestan", "aq-qala", "bandar-torkaman", "aliabad-katul", "kordkuy", "kalale", "galikesh", "gorgan", "gomishan", "gonbad-kavus", "minoodasht", "sangdovin", "sorkhan-kalateh", "faragi", "sadegh-abad", "bandar-gaz", "maraveh-tapeh", "daland", "negin-shahr", "ramiyan", "khan-bin", "jelin", "dozin", "nokandeh", "goli-dagh", "nodeh-khandoz", "anbaralum", "fazel-abad", "mazrae-katool", "yanghagh", "sijval", "simin-shahr", "tatar-olya", "alghajar", "ghorogh", "inche-borun", "rasht", "astara", "astaneh-ashrafiyeh", "ahmadsar-gourab", "asalem", "amlash", "barah-sar", "bandar-anzali", "pareh-sar", "talesh", "toutkabon", "jirandeh", "chaboksar", "chaf-chamkhale", "chobar", "haviq", "khoshkbijar", "khomam", "deylaman", "rankouh", "rahim-abad", "rostam-abad", "rezvanshahr", "rudbar", "roudbaneh", "rudsar", "zibakenar", "sangar", "siahkal", "shaft", "shelman", "someh-sara", "fuman", "kelachay", "kouchesfahan", "koumeleh", "kiashahr", "gourab-zarmikh", "lahijan", "lashtenesha", "langarud", "loshan", "loulman", "lavandevil", "lisar", "masal", "masuleh", "makloan", "manjil", "vajargah", "tahergurab", "shanderman", "ziyabar", "otaghvar", "tulam-shahr", "pirbazar", "azna", "aleshtar", "aligudarz", "borujerd", "pol-dokhtar", "khorramabad", "dorud", "kuhdasht", "nurabad", "aalasht", "amol", "amirkala", "izadshahr", "babol", "babolsar", "baladeh", "behshahr", "bahnamir", "polsefid", "tonekabon", "juybar", "chalus", "chamestan", "khalil-shahr", "khoshroud-pey", "ramsar", "rostamkola", "royan", "reyneh", "ziraab", "sari", "sorkhrood", "salman-shahr", "sourek", "shirgah", "abbasabad-mazandaran", "farahabad", "fereydunkenar", "farim", "qaemshahr", "katalem-sadatshahr", "kelarabad", "kelarestan", "kouhi-kheyl", "kiasar", "kiakola", "gatab", "gazanak", "galougah-babol", "mahmudabad", "marzan-abad", "marzikola", "nashtarud", "neka", "nur", "nowshahr", "paeen-holar", "dalkhani", "galugah-babol", "hadi-shahr", "babakan", "zargarshahr", "arateh", "emamzadeh-abdollah", "shirud", "dabudasht", "akand", "astaneh-sara", "pool", "tabaghdeh", "kojur", "khoram-abad", "hachirud", "arak", "khomein", "delijan", "saveh", "shazand", "mahalat", "mohajeran", "bandar-abbas", "takht", "dargahan", "qeshm", "kish", "minab", "hormuz", "asadabad", "bahar", "tuyserkan", "kabudrahang", "malayer", "nahavand", "hamedan", "ardakan", "bafq", "taft", "hamidia", "mehriz", "meybod", "yazd"},
 		// Types: []string{"buy-apartment"},
-		// Types: []string{"buy-apartment", "buy-villa", "rent-apartment", "rent-villa"},
-		Types:     []string{"buy-villa"},
+		Types: []string{"buy-apartment", "buy-villa", "rent-apartment", "rent-villa"},
+		// Types:     []string{"buy-villa"},
 		OutputDir: "crawler_output",
 		ChromeFlags: append(chromedp.DefaultExecAllocatorOptions[:],
 			chromedp.Flag("headless", true),
@@ -98,8 +102,8 @@ func DefaultConfig() CrawlerConfig {
 }
 
 // Start begins the crawler's operation
-func (c *Crawler) Start(ctx context.Context) error {
-	log.Printf("Starting crawler with interval: %v", c.config.RunInterval)
+func (c *MyCrawler) Start(ctx context.Context) error {
+	log.Printf("Starting crawler with interval: %v", c.Config.RunInterval)
 
 	// Run immediately on startup
 	if err := c.RunOnce(ctx); err != nil {
@@ -107,7 +111,7 @@ func (c *Crawler) Start(ctx context.Context) error {
 	}
 
 	// Setup ticker for periodic runs
-	ticker := time.NewTicker(c.config.RunInterval)
+	ticker := time.NewTicker(c.Config.RunInterval)
 	defer ticker.Stop()
 
 	for {
@@ -123,24 +127,24 @@ func (c *Crawler) Start(ctx context.Context) error {
 }
 
 // checkAndRun verifies if enough time has passed and runs the crawler
-func (c *Crawler) checkAndRun(ctx context.Context) error {
-	c.runMutex.Lock()
-	if time.Since(c.lastRunTime) < c.config.MinTimeBetweenRuns {
-		c.runMutex.Unlock()
+func (c *MyCrawler) checkAndRun(ctx context.Context) error {
+	c.RunMutex.Lock()
+	if time.Since(c.LastRunTime) < c.Config.MinTimeBetweenRuns {
+		c.RunMutex.Unlock()
 		return nil
 	}
-	c.runMutex.Unlock()
+	c.RunMutex.Unlock()
 	return c.RunOnce(ctx)
 }
 
 // RunOnce performs a single crawl operation
-func (c *Crawler) RunOnce(ctx context.Context) error {
-	c.runMutex.Lock()
-	defer c.runMutex.Unlock()
+func (c *MyCrawler) RunOnce(ctx context.Context) error {
+	c.RunMutex.Lock()
+	defer c.RunMutex.Unlock()
 
 	log.Printf("Starting crawl at %v", time.Now())
 	defer func() {
-		c.lastRunTime = time.Now()
+		c.LastRunTime = time.Now()
 		log.Printf("Completed crawl at %v", time.Now())
 	}()
 
@@ -148,32 +152,33 @@ func (c *Crawler) RunOnce(ctx context.Context) error {
 }
 
 // crawl performs the actual crawling operation
-func (c *Crawler) crawl(ctx context.Context) error {
+func (c *MyCrawler) crawl(ctx context.Context) error {
 	// Setup browser context
-	allocCtx, allocCancel := chromedp.NewExecAllocator(ctx, c.config.ChromeFlags...)
+	allocCtx, allocCancel := chromedp.NewExecAllocator(ctx, c.Config.ChromeFlags...)
 	defer allocCancel()
 
 	// Create timeout context for entire operation
-	crawlCtx, cancel := context.WithTimeout(allocCtx, c.config.PageTimeout)
+	crawlCtx, cancel := context.WithTimeout(allocCtx, c.Config.PageTimeout)
 	defer cancel()
 
 	var wg sync.WaitGroup
-	var allAds []HouseAd
+	var allAds []model.Listing
 
 	// Process each URL concurrently
-	for _, city := range c.config.Cities {
-		for _, _type := range c.config.Types {
+	for _, city := range c.Config.Cities {
+		for _, _type := range c.Config.Types {
 			wg.Add(1)
 			go func(city, _type string) {
 				defer wg.Done()
 
 				// Start monitoring this goroutine
-				stats := c.goroutineMonitor.StartTracking(city, _type)
-				defer c.goroutineMonitor.StopTracking(stats.GoroutineID)
+
+				stats := c.GoroutineMonitor.StartTracking(city, _type)
+				defer c.GoroutineMonitor.StopTracking(stats.GoroutineID)
 
 				if err := c.processURL(crawlCtx, city, _type, stats, &allAds); err != nil {
 					select {
-					case c.errorChan <- err:
+					case c.ErrorChan <- err:
 					default:
 					}
 				}
@@ -184,7 +189,7 @@ func (c *Crawler) crawl(ctx context.Context) error {
 	wg.Wait()
 
 	// Save goroutine statistics
-	if err := c.goroutineMonitor.SaveStats(c.config.OutputDir); err != nil {
+	if err := c.GoroutineMonitor.SaveStats(c.Config.OutputDir); err != nil {
 		log.Printf("Error saving goroutine stats: %v", err)
 	}
 
@@ -193,10 +198,10 @@ func (c *Crawler) crawl(ctx context.Context) error {
 }
 
 // processURL handles crawling a single URL
-func (c *Crawler) processURL(ctx context.Context, city, _type string, stats *GoroutineStats, allAds *[]HouseAd) error {
+func (c *MyCrawler) processURL(ctx context.Context, city, _type string, stats *model.GoroutineStats, allAds *[]Listing) error {
 	// Acquire URL semaphore
-	c.urlSemaphore <- struct{}{}
-	defer func() { <-c.urlSemaphore }()
+	c.UrlSemaphore <- struct{}{}
+	defer func() { <-c.UrlSemaphore }()
 
 	url := "https://divar.ir/s/" + city + "/" + _type
 	stats.URL = url
@@ -205,7 +210,7 @@ func (c *Crawler) processURL(ctx context.Context, city, _type string, stats *Gor
 	browserCtx, cancel := chromedp.NewContext(ctx, chromedp.WithLogf(log.Printf))
 	defer cancel()
 
-	var urlAds []HouseAd
+	var urlAds []model.Listing
 	var adsWg sync.WaitGroup
 	adsWg.Add(1)
 
@@ -228,9 +233,9 @@ func (c *Crawler) processURL(ctx context.Context, city, _type string, stats *Gor
 	stats.NumAdsFound = len(urlAds)
 
 	// Safely append the ads
-	c.adsMutex.Lock()
+	c.AdsMutex.Lock()
 	*allAds = append(*allAds, urlAds...)
-	c.adsMutex.Unlock()
+	c.AdsMutex.Unlock()
 
 	log.Printf("Completed URL %s: Found %d ads", url, len(urlAds))
 	return nil
@@ -238,13 +243,13 @@ func (c *Crawler) processURL(ctx context.Context, city, _type string, stats *Gor
 
 // scrollAndScrape implements the scrolling and scraping logic
 // Original function with issues identified and fixed
-func (c *Crawler) scrollAndScrape(ads *[]HouseAd, wg *sync.WaitGroup) chromedp.ActionFunc {
+func (c *MyCrawler) scrollAndScrape(ads *[]model.Listing, wg *sync.WaitGroup) chromedp.ActionFunc {
 	return func(ctx context.Context) error {
 		// Only one Done() call is needed at the end
 		defer wg.Done()
 
 		var previousHeight int64
-		adChannel := make(chan []HouseAd)
+		adChannel := make(chan []model.Listing)
 		done := make(chan struct{})
 		var mu sync.Mutex
 		var once sync.Once
@@ -293,7 +298,7 @@ func (c *Crawler) scrollAndScrape(ads *[]HouseAd, wg *sync.WaitGroup) chromedp.A
 					i++
 				}
 
-				var newAds []HouseAd
+				var newAds []model.Listing
 				err := chromedp.Evaluate(`
                     Array.from(document.querySelectorAll('.kt-post-card')).map(card => ({
                         title: card.querySelector('.kt-post-card__title')?.innerText || '',
@@ -365,7 +370,7 @@ func (c *Crawler) scrollAndScrape(ads *[]HouseAd, wg *sync.WaitGroup) chromedp.A
 }
 
 // processAds handles the processing of gathered ads
-func (c *Crawler) processAds(ctx context.Context, ads *[]HouseAd) error {
+func (c *MyCrawler) processAds(ctx context.Context, ads *[]model.Listing) error {
 	totalAds := len(*ads)
 	if totalAds == 0 {
 		return fmt.Errorf("no ads found during scraping")
@@ -377,12 +382,12 @@ func (c *Crawler) processAds(ctx context.Context, ads *[]HouseAd) error {
 	// for i := range *ads {
 	for i := range 6 {
 		wg.Add(1)
-		go func(ad *HouseAd, index int) {
+		go func(ad *model.Listing, index int) {
 			defer wg.Done()
 
 			// Reactivate semaphore control
-			c.adsSemaphore <- struct{}{}
-			defer func() { <-c.adsSemaphore }()
+			c.AdsSemaphore <- struct{}{}
+			defer func() { <-c.AdsSemaphore }()
 
 			// Add retry logic
 			maxRetries := 3
@@ -398,14 +403,14 @@ func (c *Crawler) processAds(ctx context.Context, ads *[]HouseAd) error {
 
 			if err != nil {
 				select {
-				case c.errorChan <- fmt.Errorf("failed after %d retries: %w", maxRetries, err):
+				case c.ErrorChan <- fmt.Errorf("failed after %d retries: %w", maxRetries, err):
 				default:
 				}
 				return
 			}
 
 			select {
-			case c.resultsChan <- *ad:
+			case c.ResultsChan <- *ad:
 			case <-ctx.Done():
 			}
 		}(&(*ads)[i], i)
@@ -413,24 +418,24 @@ func (c *Crawler) processAds(ctx context.Context, ads *[]HouseAd) error {
 
 	go func() {
 		wg.Wait()
-		close(c.errorChan)
-		close(c.resultsChan)
+		close(c.ErrorChan)
+		close(c.ResultsChan)
 	}()
 
-	var processedAds []HouseAd
+	var processedAds []model.Listing
 	var errors []error
 
-	for c.errorChan != nil || c.resultsChan != nil {
+	for c.ErrorChan != nil || c.ResultsChan != nil {
 		select {
-		case err, ok := <-c.errorChan:
+		case err, ok := <-c.ErrorChan:
 			if !ok {
-				c.errorChan = nil
+				c.ErrorChan = nil
 				continue
 			}
 			errors = append(errors, err)
-		case ad, ok := <-c.resultsChan:
+		case ad, ok := <-c.ResultsChan:
 			if !ok {
-				c.resultsChan = nil
+				c.ResultsChan = nil
 				continue
 			}
 			processedAds = append(processedAds, ad)
@@ -449,18 +454,18 @@ func (c *Crawler) processAds(ctx context.Context, ads *[]HouseAd) error {
 }
 
 // processAdDetails handles fetching details for a single ad
-func (c *Crawler) processAdDetails(ctx context.Context, ad *HouseAd, index int) error {
+func (c *MyCrawler) processAdDetails(ctx context.Context, ad *model.Listing, index int) error {
 	// Create new browser context for each ad
-	fmt.Println("crawling ", ad.Link)
+	fmt.Println("crawling ", ad.URL)
 	browserCtx, cancel := chromedp.NewContext(ctx, chromedp.WithLogf(log.Printf))
 	defer cancel()
 
 	// Add timeout
-	timeoutCtx, timeoutCancel := context.WithTimeout(browserCtx, c.config.AdTimeout)
+	timeoutCtx, timeoutCancel := context.WithTimeout(browserCtx, c.Config.AdTimeout)
 	defer timeoutCancel()
 
 	// Navigate to ad page first
-	if err := chromedp.Run(timeoutCtx, chromedp.Navigate(ad.Link)); err != nil {
+	if err := chromedp.Run(timeoutCtx, chromedp.Navigate(ad.URL)); err != nil {
 		return fmt.Errorf("failed to navigate to ad page: %w", err)
 	}
 
@@ -482,12 +487,12 @@ func (c *Crawler) processAdDetails(ctx context.Context, ad *HouseAd, index int) 
 				// Try primary selector first
 				err := chromedp.Evaluate(evaluateNumericScript(
 					"document.querySelectorAll('.kt-group-row__data-row .kt-group-row-item__value')[0]",
-				), &ad.Meterage).Do(adCtx)
+				), &ad.Area).Do(adCtx)
 				// Fall back to secondary selector if primary fails
-				if err != nil || ad.Meterage == 0 {
+				if err != nil || ad.Area == 0 {
 					return chromedp.Evaluate(evaluateNumericScript(
 						"document.querySelector('.kt-unexpandable-row__value')",
-					), &ad.Meterage).Do(adCtx)
+					), &ad.Area).Do(adCtx)
 				}
 				return err
 			},
@@ -497,7 +502,7 @@ func (c *Crawler) processAdDetails(ctx context.Context, ad *HouseAd, index int) 
 			action: func(adCtx context.Context) error {
 				return chromedp.Evaluate(evaluateNumericScript(
 					"document.querySelector('.kt-group-row__data-row td:nth-child(3)')",
-				), &ad.Bedrooms).Do(adCtx)
+				), &ad.Rooms).Do(adCtx)
 			},
 		},
 		{
@@ -604,7 +609,7 @@ func (c *Crawler) processAdDetails(ctx context.Context, ad *HouseAd, index int) 
 							// Return first word
 							return words[0];
 						})()
-					`, &ad.AdType).Do(adCtx)
+					`, &ad.Status).Do(adCtx)
 			},
 		},
 		{
@@ -627,8 +632,8 @@ func (c *Crawler) processAdDetails(ctx context.Context, ad *HouseAd, index int) 
 				if err := chromedp.Evaluate(amenitiesScript, &amenities).Do(adCtx); err != nil {
 					return err
 				}
-				ad.Elevator = amenities.HasElevator
-				ad.WareHouse = amenities.HasWarehouse
+				ad.HasElevator = amenities.HasElevator
+				ad.HasStorage = amenities.HasWarehouse
 				return nil
 			},
 		},
@@ -745,7 +750,7 @@ func (c *Crawler) processAdDetails(ctx context.Context, ad *HouseAd, index int) 
 				if err != nil {
 					return err
 				}
-				ad.AdCreateDate = date
+				ad.CreatedAt = date
 				return nil
 			},
 		},
@@ -758,7 +763,7 @@ func (c *Crawler) processAdDetails(ctx context.Context, ad *HouseAd, index int) 
 					return ctx.Err()
 				default:
 					if err := task.action(ctx); err != nil {
-						log.Printf("Error in %s for ad %s: %v", task.description, ad.Link, err)
+						log.Printf("Error in %s for ad %s: %v", task.description, ad.URL, err)
 					}
 				}
 			}
@@ -768,12 +773,12 @@ func (c *Crawler) processAdDetails(ctx context.Context, ad *HouseAd, index int) 
 }
 
 // SaveResults saves the crawled results to storage
-func (c *Crawler) SaveResults(ads *[]HouseAd) error {
-	if err := os.MkdirAll(c.config.OutputDir, 0755); err != nil {
+func (c *MyCrawler) SaveResults(ads *[]model.Listing) error {
+	if err := os.MkdirAll(c.Config.OutputDir, 0755); err != nil {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
 
-	filename := filepath.Join(c.config.OutputDir,
+	filename := filepath.Join(c.Config.OutputDir,
 		fmt.Sprintf("crawl_results_%s.json", time.Now().Format("2006-01-02_15-04-05")))
 
 	file, err := os.Create(filename)
@@ -815,13 +820,13 @@ func evaluateNumericScript(selector string) string {
 	`, persianToEnglishJS, selector)
 }
 
-func uniqueAds(ads []HouseAd) []HouseAd {
+func uniqueAds(ads []model.Listing) []model.Listing {
 	// return ads
 	seen := make(map[string]bool)
-	unique := []HouseAd{}
+	unique := []model.Listing{}
 
 	for _, ad := range ads {
-		key := ad.Title + "|" + ad.Link
+		key := ad.Title + "|" + ad.URL
 		if !seen[key] && strings.TrimSpace(ad.Title) != "" {
 			seen[key] = true
 			unique = append(unique, ad)
