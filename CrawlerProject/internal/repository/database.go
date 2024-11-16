@@ -16,7 +16,7 @@ func NewDatabase(db *gorm.DB) *Database {
 }
 
 func (d *Database) Migrate() error {
-	if err := d.AutoMigrate(&model.AdminLog{}, &model.Bookmark{}, &model.CrawlerLog{}, &model.Filter{}, &model.Listing{}, &model.SearchHistory{}, &model.User{}); err != nil {
+	if err := d.AutoMigrate(&model.AdminLog{}, &model.CrawlerLog{}, &model.Filter{}, &model.Listing{}, &model.SearchHistory{}, &model.User{}); err != nil {
 		return err
 	}
 	return nil
