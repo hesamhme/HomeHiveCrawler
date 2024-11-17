@@ -1,6 +1,7 @@
 package crawler
 
 import (
+	"CrawlerProject/internal/service"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -732,6 +733,11 @@ func (c *MyCrawler) processAdDetails(ctx context.Context, ad *model.Listing, ind
 
 // SaveResults saves the crawled results to storage
 func (c *MyCrawler) SaveResults(ads *[]model.Listing) error {
+	// save to database
+	for _, ad := range *ads {
+		service.StoreListing(nil, ad)
+	}
+
 	if err := os.MkdirAll(c.Config.OutputDir, 0755); err != nil {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}

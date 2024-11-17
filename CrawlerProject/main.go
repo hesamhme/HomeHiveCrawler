@@ -3,6 +3,7 @@ package main
 import (
 	"CrawlerProject/internal/bot"
 	"CrawlerProject/internal/repository"
+	"CrawlerProject/internal/service"
 	"CrawlerProject/pkg/config"
 	"CrawlerProject/pkg/logger"
 	p "CrawlerProject/pkg/postgres"
@@ -36,6 +37,7 @@ func main() {
 	// repositories
 
 	log.Println("Database tables created/migrated successfully!")
+	service.SetDefaultDB(localDB)
 
 	// telegram bot
 
