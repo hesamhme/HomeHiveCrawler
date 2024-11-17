@@ -27,35 +27,35 @@ func sendFormattedListings(bot *tgbotapi.BotAPI, chatID int64, results []model.L
 				"تاریخ بروزرسانی: %s\n"+
 				"تصاویر: %s\n"+
 				"[لینک](%s)\n"+
-			"دانلود zip"+
-			"ارسال به ایمیل",
+				"دانلود zip"+
+				"ارسال به ایمیل",
 			result.Title,
 			result.Price,
 			result.City,
 			result.Neighborhood,
-			result.Meterage,
-			result.Bedrooms,
-			result.AdType,
+			result.Area,
+			result.Rooms,
+			result.Status,
 			result.Age,
 			result.HouseType,
 			result.Floor,
 			func() string {
-				if result.Warehouse {
+				if result.HasStorage {
 					return "دارد"
 				}
 				return "ندارد"
 			}(),
 			func() string {
-				if result.Elevator {
+				if result.HasElevator {
 					return "دارد"
 				}
 				return "ندارد"
 			}(),
-			result.AdCreateDate,
+			result.CreatedAt,
 			result.CreatedAt,
 			result.UpdatedAt,
 			result.Images,
-			result.Link)
+			result.URL)
 
 		msg := tgbotapi.NewMessage(chatID, msgText)
 		if _, err := bot.Send(msg); err == nil {
