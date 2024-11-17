@@ -343,8 +343,8 @@ func (c *MyCrawler) processAds(ctx context.Context, ads *[]model.Listing) error 
 	log.Printf("Processing details for %d ads", totalAds)
 
 	var wg sync.WaitGroup
-	// for i := range *ads {
-	for i := range 6 {
+	for i := range *ads {
+		// for i := range 6 {
 		wg.Add(1)
 		go func(ad *model.Listing, index int) {
 			defer wg.Done()
