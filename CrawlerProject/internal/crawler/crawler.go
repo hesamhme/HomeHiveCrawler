@@ -8,13 +8,11 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"regexp"
-	"strconv"
-	"strings"
 	"sync"
 	"time"
 
 	model "CrawlerProject/internal/model"
+	utils "CrawlerProject/internal/utils"
 
 	"github.com/chromedp/chromedp"
 	"golang.org/x/exp/rand"
@@ -24,56 +22,16 @@ type MyCrawler struct {
 	model.Crawler
 }
 
-var persianDigitMap = map[rune]rune{
-	'۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4',
-	'۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9',
-}
-
-const persianToEnglishJS = `
-function persianToEnglish(str) {
-	var numbers = {'۰':'0','۱':'1','۲':'2','۳':'3','۴':'4','۵':'5','۶':'6','۷':'7','۸':'8','۹':'9'};
-	return str.replace(/[۰-۹]/g, function(d) { return numbers[d]; });
-}
-`
-
-var persianToGregorianMonth = map[string]int{
-	"فروردین":  1,  // March
-	"اردیبهشت": 2,  // April
-	"خرداد":    3,  // May
-	"تیر":      4,  // June
-	"مرداد":    5,  // July
-	"شهریور":   6,  // August
-	"مهر":      7,  // September
-	"آبان":     8,  // October
-	"آذر":      9,  // November
-	"دی":       10, // December
-	"بهمن":     11, // January
-	"اسفند":    12, // February
-}
-
-// persianToLatinDigits converts Persian digits to Latin digits
-var persianToLatinDigits = map[rune]rune{
-	'۰': '0',
-	'۱': '1',
-	'۲': '2',
-	'۳': '3',
-	'۴': '4',
-	'۵': '5',
-	'۶': '6',
-	'۷': '7',
-	'۸': '8',
-	'۹': '9',
-}
-
-func NewCrawler(config model.CrawlerConfig) *model.Crawler {
-	return &model.Crawler{
-		// Crawler: model.Crawler{
-		Config:           config,
-		UrlSemaphore:     make(chan struct{}, config.MaxURLConcurrency),
-		AdsSemaphore:     make(chan struct{}, config.MaxAdConcurrency),
-		ErrorChan:        make(chan error, len(config.Cities)*len(config.Types)),
-		ResultsChan:      make(chan model.Listing, 10000),
-		GoroutineMonitor: NewGoroutineMonitor(),
+func NewCrawler(config model.CrawlerConfig) *MyCrawler {
+	return &MyCrawler{
+		Crawler: model.Crawler{
+			Config:           config,
+			UrlSemaphore:     make(chan struct{}, config.MaxURLConcurrency),
+			AdsSemaphore:     make(chan struct{}, config.MaxAdConcurrency),
+			ErrorChan:        make(chan error, len(config.Cities)*len(config.Types)),
+			ResultsChan:      make(chan model.Listing, 10000),
+			GoroutineMonitor: model.NewGoroutineMonitor(),
+		},
 	}
 }
 
@@ -199,7 +157,7 @@ func (c *MyCrawler) crawl(ctx context.Context) error {
 }
 
 // processURL handles crawling a single URL
-func (c *MyCrawler) processURL(ctx context.Context, city, _type string, stats *model.GoroutineStats, allAds *[]Listing) error {
+func (c *MyCrawler) processURL(ctx context.Context, city, _type string, stats *model.GoroutineStats, allAds *[]model.Listing) error {
 	// Acquire URL semaphore
 	c.UrlSemaphore <- struct{}{}
 	defer func() { <-c.UrlSemaphore }()
@@ -349,7 +307,7 @@ func (c *MyCrawler) scrollAndScrape(ads *[]model.Listing, wg *sync.WaitGroup) ch
 						return
 					}
 					mu.Lock()
-					*ads = uniqueAds(append(*ads, newAds...))
+					*ads = utils.UniqueAds(append(*ads, newAds...))
 					log.Printf("Current number of unique ads found: %d", len(*ads))
 					mu.Unlock()
 				case <-ctx.Done():
@@ -486,12 +444,12 @@ func (c *MyCrawler) processAdDetails(ctx context.Context, ad *model.Listing, ind
 			description: "Get meterage",
 			action: func(adCtx context.Context) error {
 				// Try primary selector first
-				err := chromedp.Evaluate(evaluateNumericScript(
+				err := chromedp.Evaluate(utils.EvaluateNumericScript(
 					"document.querySelectorAll('.kt-group-row__data-row .kt-group-row-item__value')[0]",
 				), &ad.Area).Do(adCtx)
 				// Fall back to secondary selector if primary fails
 				if err != nil || ad.Area == 0 {
-					return chromedp.Evaluate(evaluateNumericScript(
+					return chromedp.Evaluate(utils.EvaluateNumericScript(
 						"document.querySelector('.kt-unexpandable-row__value')",
 					), &ad.Area).Do(adCtx)
 				}
@@ -501,7 +459,7 @@ func (c *MyCrawler) processAdDetails(ctx context.Context, ad *model.Listing, ind
 		{
 			description: "Get bedrooms",
 			action: func(adCtx context.Context) error {
-				return chromedp.Evaluate(evaluateNumericScript(
+				return chromedp.Evaluate(utils.EvaluateNumericScript(
 					"document.querySelector('.kt-group-row__data-row td:nth-child(3)')",
 				), &ad.Rooms).Do(adCtx)
 			},
@@ -746,7 +704,7 @@ func (c *MyCrawler) processAdDetails(ctx context.Context, ad *model.Listing, ind
 				if err != nil {
 					return err
 				}
-				date, err := ExtractPersianDate(title)
+				date, err := utils.ExtractPersianDate(title)
 
 				if err != nil {
 					return err
@@ -801,98 +759,4 @@ func (c *MyCrawler) SaveResults(ads *[]model.Listing) error {
 
 	log.Printf("Results saved to %s", filename)
 	return nil
-}
-
-func evaluateScript(selector string, conversion string) string {
-	return fmt.Sprintf(`
-		(function() {
-			%s
-			var el = %s;
-			if (!el) return '';
-			return %s;
-		})()
-	`, persianToEnglishJS, selector, conversion)
-}
-
-func evaluateNumericScript(selector string) string {
-	return fmt.Sprintf(`
-		(function() {
-			%s
-			var el = %s;
-			if (!el) return 0;
-			var text = el.innerText.trim();
-			return parseInt(persianToEnglish(text)) || 0;
-		})()
-	`, persianToEnglishJS, selector)
-}
-
-func uniqueAds(ads []model.Listing) []model.Listing {
-	// return ads
-	seen := make(map[string]bool)
-	unique := []model.Listing{}
-
-	for _, ad := range ads {
-		key := ad.Title + "|" + ad.URL
-		if !seen[key] && strings.TrimSpace(ad.Title) != "" {
-			seen[key] = true
-			unique = append(unique, ad)
-		}
-	}
-	return unique
-}
-
-func convertPersianToLatinDigits(str string) string {
-	result := make([]rune, 0, len(str))
-	for _, r := range str {
-		if latin, ok := persianToLatinDigits[r]; ok {
-			result = append(result, latin)
-		} else {
-			result = append(result, r)
-		}
-	}
-	return string(result)
-}
-
-func ExtractPersianDate(text string) (time.Time, error) {
-	// Regular expression to match Persian date pattern
-	re := regexp.MustCompile(`(\d{1,2})\s+([\p{L}]+)\s+(\d{4})`)
-
-	// Convert Persian digits to Latin digits
-	latinText := convertPersianToLatinDigits(text)
-
-	// Find the date pattern
-	matches := re.FindStringSubmatch(latinText)
-	if len(matches) != 4 {
-		return time.Time{}, fmt.Errorf("date pattern not found")
-	}
-
-	// Extract components
-	day := matches[1]
-	month := matches[2]
-	year := matches[3]
-
-	// Convert Persian year to Gregorian year
-	persianYear, err := strconv.Atoi(year)
-	if err != nil {
-		return time.Time{}, err
-	}
-	gregorianYear := persianYear // Approximate conversion
-
-	// Get Gregorian month number
-	gregorianMonth, ok := persianToGregorianMonth[month]
-	if !ok {
-		return time.Time{}, fmt.Errorf("invalid Persian month: %s", month)
-	}
-
-	// Convert day to integer
-	dayInt, err := strconv.Atoi(day)
-	if err != nil {
-		return time.Time{}, err
-	}
-
-	// Create time.Time object
-	// Note: This is an approximation as exact Persian to Gregorian conversion
-	// requires more complex calculations
-	return time.Date(gregorianYear, time.Month(gregorianMonth), dayInt,
-		0, 0, 0, 0, time.UTC), nil
 }

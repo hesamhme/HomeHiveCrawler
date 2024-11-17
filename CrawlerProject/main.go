@@ -57,6 +57,7 @@ func main() {
 	defer cancel()
 
 	// Start the crawler
+
 	if err := crawler.Start(ctx); err != nil {
 		log.Fatal(err)
 	}
