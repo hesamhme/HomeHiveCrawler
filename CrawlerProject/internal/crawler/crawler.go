@@ -21,15 +21,16 @@ type MyCrawler struct {
 	model.Crawler
 }
 
-func NewCrawler(config model.CrawlerConfig) *model.Crawler {
-	return &model.Crawler{
-		// Crawler: model.Crawler{
-		Config:           config,
-		UrlSemaphore:     make(chan struct{}, config.MaxURLConcurrency),
-		AdsSemaphore:     make(chan struct{}, config.MaxAdConcurrency),
-		ErrorChan:        make(chan error, len(config.Cities)*len(config.Types)),
-		ResultsChan:      make(chan model.Listing, 10000),
-		GoroutineMonitor: NewGoroutineMonitor(),
+func NewCrawler(config model.CrawlerConfig) *MyCrawler {
+	return &MyCrawler{
+		Crawler: model.Crawler{
+			Config:           config,
+			UrlSemaphore:     make(chan struct{}, config.MaxURLConcurrency),
+			AdsSemaphore:     make(chan struct{}, config.MaxAdConcurrency),
+			ErrorChan:        make(chan error, len(config.Cities)*len(config.Types)),
+			ResultsChan:      make(chan model.Listing, 10000),
+			GoroutineMonitor: model.NewGoroutineMonitor(),
+		},
 	}
 }
 
@@ -155,7 +156,7 @@ func (c *MyCrawler) crawl(ctx context.Context) error {
 }
 
 // processURL handles crawling a single URL
-func (c *MyCrawler) processURL(ctx context.Context, city, _type string, stats *model.GoroutineStats, allAds *[]Listing) error {
+func (c *MyCrawler) processURL(ctx context.Context, city, _type string, stats *model.GoroutineStats, allAds *[]model.Listing) error {
 	// Acquire URL semaphore
 	c.UrlSemaphore <- struct{}{}
 	defer func() { <-c.UrlSemaphore }()
