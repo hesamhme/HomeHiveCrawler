@@ -729,6 +729,41 @@ func (c *MyCrawler) processAdDetails(ctx context.Context, ad *model.Listing, ind
 					`, &ad.Neighborhood).Do(adCtx)
 			},
 		},
+		{
+			description: "Get parking",
+			action: func(adCtx context.Context) error {
+				return chromedp.Evaluate(`
+						 (() => {
+						try {
+							// First find the section title
+							const sectionTitle = Array.from(document.querySelectorAll('.kt-section-title__title'))
+								.find(el => el.textContent === 'ویژگی‌ها و امکانات');
+							
+							if (!sectionTitle) {
+								return false;
+							}
+							
+							// Find the closest table that contains features
+							const featureTable = sectionTitle.closest('.kt-section-title--alt-padded')
+								.nextElementSibling;
+							
+							if (!featureTable) {
+								return false;
+							}
+							
+							// Look for پارکینگ in the table
+							const hasParking = Array.from(featureTable.querySelectorAll('.kt-body--stable'))
+								.some(el => el.textContent === 'پارکینگ');
+								
+							return hasParking;
+						} catch (e) {
+							console.error('Error checking for parking:', e);
+							return false;
+						}
+					})();
+					`, &ad.HasParking).Do(adCtx)
+			},
+		},
 	}
 	return chromedp.Run(timeoutCtx,
 		chromedp.ActionFunc(func(ctx context.Context) error {
