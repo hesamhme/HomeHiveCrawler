@@ -13,7 +13,7 @@ import (
 func SaveOrUpdateListing(db *gorm.DB, listing *model.Listing) error {
 	// check for listing
 	var existingListing model.Listing
-	result := db.Where("url = ?", listing.Link).First(&existingListing)
+	result := db.Where("url = ?", listing.URL).First(&existingListing)
 	if result.Error != nil && result.Error != gorm.ErrRecordNotFound {
 		return result.Error
 	}
