@@ -1,7 +1,6 @@
 package main
 
 import (
-	"CrawlerProject/internal/bot"
 	"CrawlerProject/internal/repository"
 	"CrawlerProject/internal/service"
 	"CrawlerProject/pkg/config"
@@ -41,10 +40,10 @@ func main() {
 
 	// telegram bot
 
-	err = bot.SetupBot(config.TGToken)
-	if err != nil {
-		return
-	}
+	// err = bot.SetupBot(config.TGToken)
+	// if err != nil {
+	// 	return
+	// }
 	// crawler
 	rand.Seed(uint64(time.Now().UnixNano()))
 

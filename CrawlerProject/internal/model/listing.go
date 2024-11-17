@@ -17,6 +17,7 @@ type Listing struct {
 	Floor        int        `gorm:"" json:"floor"`                     // Changed from *string to int
 	HasStorage   bool       `gorm:"column:warehouse" json:"warehouse"` // Mapped from WareHouse
 	HasElevator  bool       `gorm:"column:elevator" json:"elevator"`   // Mapped from Elevator
+	HasParking   bool       `gorm:"column:parking" json:"parking"`     // Mapped from Parking
 	Source       string     `gorm:"size:100" json:"source"`            // e.g., "divar", "sheypoor"
 	URL          string     `gorm:"type:text" json:"link"`             // Mapped from Link
 	Seller       string     `gorm:"size:100" json:"seller"`            // Added from HouseAd
