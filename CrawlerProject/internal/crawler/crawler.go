@@ -13,6 +13,8 @@ import (
 
 	model "CrawlerProject/internal/model"
 	utils "CrawlerProject/internal/utils"
+	"CrawlerProject/pkg/config"
+	"CrawlerProject/pkg/logger"
 
 	"github.com/chromedp/chromedp"
 	"golang.org/x/exp/rand"
@@ -37,19 +39,22 @@ func NewCrawler(config model.CrawlerConfig) *MyCrawler {
 
 // DefaultConfig returns the default configuration
 func DefaultConfig() model.CrawlerConfig {
+	config, err := config.InitConfig()
+	if err != nil {
+		logger.Logger.Error().Err(err).Msg("error while initializing config")
+		os.Exit(3)
+	}
 	return model.CrawlerConfig{
-		RunInterval:        5 * time.Hour,
+		RunInterval:        time.Duration(config.Interval) * time.Hour,
 		MinTimeBetweenRuns: time.Duration(float64(5*time.Hour) * 0.9),
 		PageTimeout:        30 * time.Minute,
 		AdTimeout:          20 * time.Minute,
-		MaxURLConcurrency:  2,
-		MaxAdConcurrency:   5,
-		// Cities:             []string{"tabriz", "yazd", "tehran", "shiraz"},
-		Cities: []string{"yazd"},
-		// Cities:             []string{"tabriz", "azarshahr", "ahar", "bonab", "sarab", "sahand", "maragheh", "marand", "mianeh", "urmia", "oshnavieh", "bukan", "piranshahr", "khoy", "sardasht", "salmas", "shahin-dej", "maku", "mahabad", "miandoab", "naqadeh", "ardabil", "parsabad", "khalkhal", "sarein", "germi", "meshgin-shahr", "namin", "isfahan", "aran-va-bidgol", "abrisham-isfahan", "khomeyni-shahr", "khansar", "khour", "daran", "semirom", "shahin-shahr", "falavarjan", "foolad-shahr", "ghamsar", "kashan", "golpayegan", "lenjan", "mobarakeh", "najafabad", "karaj", "asara", "eshtehard", "tankaman", "charbagh-alborz", "taleqan", "fardis", "koohsar", "garmdareh", "mahdasht", "mohammad-shahr", "nazarabad", "hashtgerd", "abdanan", "ilam", "eyvan", "dehloran", "mehran", "borazjan", "dayyer", "bandar-kangan", "bandar-ganaveh", "bushehr", "jam", "khormoj", "tehran", "absard", "abali", "arjmand", "eslamshahr", "andisheh-new-town", "baghershahr", "bumehen", "pakdasht", "pardis", "parand", "pishva", "javadabad", "chahar-dangeh", "damavand", "robat-karim", "rudehen", "shahr-e-rey", "shahedshahr", "shemshak", "shahriar", "sabashahr", "safadasht-industrial-city", "ferdosiye", "fasham", "firuzkooh", "qods", "qarchak", "kahrizak", "kilan", "golestan-baharestan", "lavasan", "nasimshahr", "vahidieh", "varamin", "boroujen", "saman", "shahrekord", "farrokhshahr", "lordegan", "birjand", "tabas", "ferdows", "ghayen", "mashhad", "bardaskan", "taybad", "torbat-jam", "torbat-heydariyeh", "chenaran", "khaf", "sabzevar", "shandiz", "torghabeh", "qasemabad-khaf", "quchan", "golbahar", "gonabad", "molkabad", "neyshabur", "ashkhaneh", "esfarāyen", "bojnurd", "shirvan", "ahvaz", "abadan", "omidiyeh", "andimeshk", "izeh", "bandar-imam-khomeini", "bandar-mahshahr", "behbahan", "chamran-town", "hamidiyeh", "khorramshahr", "dezful", "ramshir", "ramhormoz", "susangerd", "shadeghan", "shush", "shooshtar", "masjed-soleyman", "hendijan", "abhar", "khorramdarreh", "zanjan", "qeydar", "damghan", "semnan", "shahroud", "garmsar", "iranshahr", "chabahar", "khash", "zabol", "zahedan", "zahak", "saravan", "konarak", "shiraz", "abadeh", "eqlid", "jahrom", "khoour", "darab", "zarghan", "sadra", "fasa", "firuzabad", "kazeroon", "lar", "lamerd", "marvdasht", "mohr", "norabad", "neyriz", "abyek", "eqbaliyeh", "alvand", "takestan", "shal", "qazvin", "mohammadiyeh", "qom", "baneh", "bijar", "dehgolan", "saqqez", "sanandaj", "qorveh", "kamyaran", "marivan", "baft", "bardsir", "boluk", "bam", "jiroft", "rafsanjan", "zarand", "sirjan", "kerman", "kahnooj", "mahan", "kermanshah", "eslamabad-gharb", "bisotun", "javanrud", "sarpol-zahab", "sonqor", "sahneh", "kangavar", "gahvareh", "harsin", "dogonbadan", "dehdasht", "sisakht", "yasuj", "azadshahr-golestan", "aq-qala", "bandar-torkaman", "aliabad-katul", "kordkuy", "kalale", "galikesh", "gorgan", "gomishan", "gonbad-kavus", "minoodasht", "sangdovin", "sorkhan-kalateh", "faragi", "sadegh-abad", "bandar-gaz", "maraveh-tapeh", "daland", "negin-shahr", "ramiyan", "khan-bin", "jelin", "dozin", "nokandeh", "goli-dagh", "nodeh-khandoz", "anbaralum", "fazel-abad", "mazrae-katool", "yanghagh", "sijval", "simin-shahr", "tatar-olya", "alghajar", "ghorogh", "inche-borun", "rasht", "astara", "astaneh-ashrafiyeh", "ahmadsar-gourab", "asalem", "amlash", "barah-sar", "bandar-anzali", "pareh-sar", "talesh", "toutkabon", "jirandeh", "chaboksar", "chaf-chamkhale", "chobar", "haviq", "khoshkbijar", "khomam", "deylaman", "rankouh", "rahim-abad", "rostam-abad", "rezvanshahr", "rudbar", "roudbaneh", "rudsar", "zibakenar", "sangar", "siahkal", "shaft", "shelman", "someh-sara", "fuman", "kelachay", "kouchesfahan", "koumeleh", "kiashahr", "gourab-zarmikh", "lahijan", "lashtenesha", "langarud", "loshan", "loulman", "lavandevil", "lisar", "masal", "masuleh", "makloan", "manjil", "vajargah", "tahergurab", "shanderman", "ziyabar", "otaghvar", "tulam-shahr", "pirbazar", "azna", "aleshtar", "aligudarz", "borujerd", "pol-dokhtar", "khorramabad", "dorud", "kuhdasht", "nurabad", "aalasht", "amol", "amirkala", "izadshahr", "babol", "babolsar", "baladeh", "behshahr", "bahnamir", "polsefid", "tonekabon", "juybar", "chalus", "chamestan", "khalil-shahr", "khoshroud-pey", "ramsar", "rostamkola", "royan", "reyneh", "ziraab", "sari", "sorkhrood", "salman-shahr", "sourek", "shirgah", "abbasabad-mazandaran", "farahabad", "fereydunkenar", "farim", "qaemshahr", "katalem-sadatshahr", "kelarabad", "kelarestan", "kouhi-kheyl", "kiasar", "kiakola", "gatab", "gazanak", "galougah-babol", "mahmudabad", "marzan-abad", "marzikola", "nashtarud", "neka", "nur", "nowshahr", "paeen-holar", "dalkhani", "galugah-babol", "hadi-shahr", "babakan", "zargarshahr", "arateh", "emamzadeh-abdollah", "shirud", "dabudasht", "akand", "astaneh-sara", "pool", "tabaghdeh", "kojur", "khoram-abad", "hachirud", "arak", "khomein", "delijan", "saveh", "shazand", "mahalat", "mohajeran", "bandar-abbas", "takht", "dargahan", "qeshm", "kish", "minab", "hormuz", "asadabad", "bahar", "tuyserkan", "kabudrahang", "malayer", "nahavand", "hamedan", "ardakan", "bafq", "taft", "hamidia", "mehriz", "meybod", "yazd"},
-		// Types: []string{"buy-apartment"},
-		Types: []string{"buy-apartment", "buy-villa", "rent-apartment", "rent-villa"},
-		// Types:     []string{"buy-villa"},
+		MaxURLConcurrency:  config.MaxURLConcurrency,
+		MaxAdConcurrency:   config.MaxAdConcurrency,
+		Cities:             []string{"tehran"},
+		Types:              []string{"buy-apartment", "buy-villa", "rent-apartment", "rent-villa"},
+		// Cities:          []string{"tabriz", "azarshahr", "ahar", "bonab", "sarab", "sahand", "maragheh", "marand", "mianeh", "urmia", "oshnavieh", "bukan", "piranshahr", "khoy", "sardasht", "salmas", "shahin-dej", "maku", "mahabad", "miandoab", "naqadeh", "ardabil", "parsabad", "khalkhal", "sarein", "germi", "meshgin-shahr", "namin", "isfahan", "aran-va-bidgol", "abrisham-isfahan", "khomeyni-shahr", "khansar", "khour", "daran", "semirom", "shahin-shahr", "falavarjan", "foolad-shahr", "ghamsar", "kashan", "golpayegan", "lenjan", "mobarakeh", "najafabad", "karaj", "asara", "eshtehard", "tankaman", "charbagh-alborz", "taleqan", "fardis", "koohsar", "garmdareh", "mahdasht", "mohammad-shahr", "nazarabad", "hashtgerd", "abdanan", "ilam", "eyvan", "dehloran", "mehran", "borazjan", "dayyer", "bandar-kangan", "bandar-ganaveh", "bushehr", "jam", "khormoj", "tehran", "absard", "abali", "arjmand", "eslamshahr", "andisheh-new-town", "baghershahr", "bumehen", "pakdasht", "pardis", "parand", "pishva", "javadabad", "chahar-dangeh", "damavand", "robat-karim", "rudehen", "shahr-e-rey", "shahedshahr", "shemshak", "shahriar", "sabashahr", "safadasht-industrial-city", "ferdosiye", "fasham", "firuzkooh", "qods", "qarchak", "kahrizak", "kilan", "golestan-baharestan", "lavasan", "nasimshahr", "vahidieh", "varamin", "boroujen", "saman", "shahrekord", "farrokhshahr", "lordegan", "birjand", "tabas", "ferdows", "ghayen", "mashhad", "bardaskan", "taybad", "torbat-jam", "torbat-heydariyeh", "chenaran", "khaf", "sabzevar", "shandiz", "torghabeh", "qasemabad-khaf", "quchan", "golbahar", "gonabad", "molkabad", "neyshabur", "ashkhaneh", "esfarāyen", "bojnurd", "shirvan", "ahvaz", "abadan", "omidiyeh", "andimeshk", "izeh", "bandar-imam-khomeini", "bandar-mahshahr", "behbahan", "chamran-town", "hamidiyeh", "khorramshahr", "dezful", "ramshir", "ramhormoz", "susangerd", "shadeghan", "shush", "shooshtar", "masjed-soleyman", "hendijan", "abhar", "khorramdarreh", "zanjan", "qeydar", "damghan", "semnan", "shahroud", "garmsar", "iranshahr", "chabahar", "khash", "zabol", "zahedan", "zahak", "saravan", "konarak", "shiraz", "abadeh", "eqlid", "jahrom", "khoour", "darab", "zarghan", "sadra", "fasa", "firuzabad", "kazeroon", "lar", "lamerd", "marvdasht", "mohr", "norabad", "neyriz", "abyek", "eqbaliyeh", "alvand", "takestan", "shal", "qazvin", "mohammadiyeh", "qom", "baneh", "bijar", "dehgolan", "saqqez", "sanandaj", "qorveh", "kamyaran", "marivan", "baft", "bardsir", "boluk", "bam", "jiroft", "rafsanjan", "zarand", "sirjan", "kerman", "kahnooj", "mahan", "kermanshah", "eslamabad-gharb", "bisotun", "javanrud", "sarpol-zahab", "sonqor", "sahneh", "kangavar", "gahvareh", "harsin", "dogonbadan", "dehdasht", "sisakht", "yasuj", "azadshahr-golestan", "aq-qala", "bandar-torkaman", "aliabad-katul", "kordkuy", "kalale", "galikesh", "gorgan", "gomishan", "gonbad-kavus", "minoodasht", "sangdovin", "sorkhan-kalateh", "faragi", "sadegh-abad", "bandar-gaz", "maraveh-tapeh", "daland", "negin-shahr", "ramiyan", "khan-bin", "jelin", "dozin", "nokandeh", "goli-dagh", "nodeh-khandoz", "anbaralum", "fazel-abad", "mazrae-katool", "yanghagh", "sijval", "simin-shahr", "tatar-olya", "alghajar", "ghorogh", "inche-borun", "rasht", "astara", "astaneh-ashrafiyeh", "ahmadsar-gourab", "asalem", "amlash", "barah-sar", "bandar-anzali", "pareh-sar", "talesh", "toutkabon", "jirandeh", "chaboksar", "chaf-chamkhale", "chobar", "haviq", "khoshkbijar", "khomam", "deylaman", "rankouh", "rahim-abad", "rostam-abad", "rezvanshahr", "rudbar", "roudbaneh", "rudsar", "zibakenar", "sangar", "siahkal", "shaft", "shelman", "someh-sara", "fuman", "kelachay", "kouchesfahan", "koumeleh", "kiashahr", "gourab-zarmikh", "lahijan", "lashtenesha", "langarud", "loshan", "loulman", "lavandevil", "lisar", "masal", "masuleh", "makloan", "manjil", "vajargah", "tahergurab", "shanderman", "ziyabar", "otaghvar", "tulam-shahr", "pirbazar", "azna", "aleshtar", "aligudarz", "borujerd", "pol-dokhtar", "khorramabad", "dorud", "kuhdasht", "nurabad", "aalasht", "amol", "amirkala", "izadshahr", "babol", "babolsar", "baladeh", "behshahr", "bahnamir", "polsefid", "tonekabon", "juybar", "chalus", "chamestan", "khalil-shahr", "khoshroud-pey", "ramsar", "rostamkola", "royan", "reyneh", "ziraab", "sari", "sorkhrood", "salman-shahr", "sourek", "shirgah", "abbasabad-mazandaran", "farahabad", "fereydunkenar", "farim", "qaemshahr", "katalem-sadatshahr", "kelarabad", "kelarestan", "kouhi-kheyl", "kiasar", "kiakola", "gatab", "gazanak", "galougah-babol", "mahmudabad", "marzan-abad", "marzikola", "nashtarud", "neka", "nur", "nowshahr", "paeen-holar", "dalkhani", "galugah-babol", "hadi-shahr", "babakan", "zargarshahr", "arateh", "emamzadeh-abdollah", "shirud", "dabudasht", "akand", "astaneh-sara", "pool", "tabaghdeh", "kojur", "khoram-abad", "hachirud", "arak", "khomein", "delijan", "saveh", "shazand", "mahalat", "mohajeran", "bandar-abbas", "takht", "dargahan", "qeshm", "kish", "minab", "hormuz", "asadabad", "bahar", "tuyserkan", "kabudrahang", "malayer", "nahavand", "hamedan", "ardakan", "bafq", "taft", "hamidia", "mehriz", "meybod", "yazd"},
+		// Types: 			[]string{"buy-apartment"},
 		OutputDir: "crawler_output",
 		ChromeFlags: append(chromedp.DefaultExecAllocatorOptions[:],
 			chromedp.Flag("headless", true),
@@ -338,8 +343,8 @@ func (c *MyCrawler) processAds(ctx context.Context, ads *[]model.Listing) error 
 	log.Printf("Processing details for %d ads", totalAds)
 
 	var wg sync.WaitGroup
-	for i := range *ads {
-		// for i := range 6 {
+	// for i := range *ads {
+	for i := range 6 {
 		wg.Add(1)
 		go func(ad *model.Listing, index int) {
 			defer wg.Done()
@@ -472,8 +477,9 @@ func (c *MyCrawler) processAdDetails(ctx context.Context, ad *model.Listing, ind
 							var el = document.querySelector('.kt-page-title__subtitle');
 							if (!el) return '';
 							var text = el.innerText || '';
-							var parts = text.split('در');
-							return parts.length > 1 ? parts[1].trim() : '';
+							var parts = text.split('در'); 
+							var city = parts[1].split('،'); 
+							return city.length > 1 ? city[0].trim() : '';
 						})()
 					`, &ad.City).Do(adCtx)
 			},
@@ -711,6 +717,16 @@ func (c *MyCrawler) processAdDetails(ctx context.Context, ad *model.Listing, ind
 				}
 				ad.CreatedAt = date
 				return nil
+			},
+		},
+		{
+			description: "Get neighbourhood",
+			action: func(adCtx context.Context) error {
+				return chromedp.Evaluate(`
+						const text = document.querySelector('.kt-page-title__subtitle').textContent;
+						const parts = text.split(/[,،]/);
+						parts.length > 1 ? parts[1].trim() : '';
+					`, &ad.Neighborhood).Do(adCtx)
 			},
 		},
 	}
