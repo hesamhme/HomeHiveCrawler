@@ -34,9 +34,9 @@ func StoreListing(db *gorm.DB, listing model.Listing) error {
 	if db == nil {
 		db = defaultDB
 	}
-	// Check for an existing listing with the same Link.
+	// Check for an existing listing with the same url.
 	var existingListing model.Listing
-	err := db.Where("link = ?", listing.URL).First(&existingListing).Error
+	err := db.Where("url = ?", listing.URL).First(&existingListing).Error
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("failed to query existing listing: %w", err)
 	}
@@ -77,7 +77,7 @@ func StoreAllListings(db *gorm.DB, filePath string) error {
 	// Iterate through each listing and save/update it.
 	for _, listing := range listings {
 		if err := StoreListing(db, listing); err != nil {
-			fmt.Printf("failed to store listing with link %s: %v\n", listing.URL, err)
+			fmt.Printf("failed to store listing with url %s: %v\n", listing.URL, err)
 		}
 	}
 	return nil

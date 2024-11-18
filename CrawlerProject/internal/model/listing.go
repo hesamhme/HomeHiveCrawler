@@ -19,7 +19,7 @@ type Listing struct {
 	HasElevator  bool       `gorm:"column:elevator" json:"elevator"`   // Mapped from Elevator
 	HasParking   bool       `gorm:"column:parking" json:"parking"`     // Mapped from Parking
 	Source       string     `gorm:"size:100" json:"source"`            // e.g., "divar", "sheypoor"
-	URL          string     `gorm:"type:text" json:"link"`             // Mapped from Link
+	URL          string     `gorm:"type:text" json:"url"`              // Mapped from URL
 	Seller       string     `gorm:"size:100" json:"seller"`            // Added from HouseAd
 	HouseType    string     `gorm:"size:50" json:"houseType"`          // Added from HouseAd
 	Age          string     `gorm:"size:50" json:"age"`                // Added from HouseAd

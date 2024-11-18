@@ -266,7 +266,7 @@ func (c *MyCrawler) scrollAndScrape(ads *[]model.Listing, wg *sync.WaitGroup) ch
 				err := chromedp.Evaluate(`
                     Array.from(document.querySelectorAll('.kt-post-card')).map(card => ({
                         title: card.querySelector('.kt-post-card__title')?.innerText || '',
-                        link: card.querySelector('a')?.href || ''
+                        url: card.querySelector('a')?.href || ''
                     }))
                 `, &newAds).Do(ctx)
 
