@@ -11,6 +11,9 @@ import (
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"gorm.io/gorm"
+	"github.com/jung-kurt/gofpdf/v2"
+	"github.com/xuri/excelize/v2"
+	"os"
 )
 
 var db *gorm.DB // Global db variable
@@ -841,3 +844,132 @@ func handleAdCreationDateSearch(bot *tgbotapi.BotAPI, message *tgbotapi.Message,
     sendFormattedListings(bot, message.Chat.ID, results)
 }
 
+
+func ExportListingsToExcel(listings []model.Listing, filename string) error {
+	f := excelize.NewFile()
+	sheetName := "Listings"
+	f.NewSheet(sheetName)
+
+	// Persian headers
+	headers := []string{
+		"عنوان", "قیمت", "شهر", "محله", "متراژ", "تعداد اتاق خواب", "نوع آگهی", "سن بنا", 
+		"نوع ملک", "طبقه", "انباری", "آسانسور", "تاریخ ایجاد", "تاریخ بروزرسانی", "لینک",
+	}
+
+	// Add headers to Excel
+	for col, header := range headers {
+		cell := fmt.Sprintf("%s1", string(rune('A'+col)))
+		f.SetCellValue(sheetName, cell, header)
+	}
+
+	// Add data rows
+	for row, listing := range listings {
+		rowNum := row + 2 // Start from the second row
+
+		f.SetCellValue(sheetName, fmt.Sprintf("A%d", rowNum), listing.Title)
+		f.SetCellValue(sheetName, fmt.Sprintf("B%d", rowNum), listing.Price)
+		f.SetCellValue(sheetName, fmt.Sprintf("C%d", rowNum), listing.City)
+		f.SetCellValue(sheetName, fmt.Sprintf("D%d", rowNum), listing.Neighborhood)
+		f.SetCellValue(sheetName, fmt.Sprintf("E%d", rowNum), fmt.Sprintf("%.2f متر مربع", listing.Area))
+		f.SetCellValue(sheetName, fmt.Sprintf("F%d", rowNum), listing.Rooms)
+		f.SetCellValue(sheetName, fmt.Sprintf("G%d", rowNum), listing.Status)
+		f.SetCellValue(sheetName, fmt.Sprintf("H%d", rowNum), listing.Age)
+		f.SetCellValue(sheetName, fmt.Sprintf("I%d", rowNum), listing.HouseType)
+		f.SetCellValue(sheetName, fmt.Sprintf("J%d", rowNum), listing.Floor)
+		f.SetCellValue(sheetName, fmt.Sprintf("K%d", rowNum), func() string {
+			if listing.HasStorage {
+				return "دارد"
+			}
+			return "ندارد"
+		}())
+		f.SetCellValue(sheetName, fmt.Sprintf("L%d", rowNum), func() string {
+			if listing.HasElevator {
+				return "دارد"
+			}
+			return "ندارد"
+		}())
+		f.SetCellValue(sheetName, fmt.Sprintf("M%d", rowNum), listing.CreatedAt.Format("2006-01-02 15:04:05"))
+		f.SetCellValue(sheetName, fmt.Sprintf("N%d", rowNum), listing.UpdatedAt.Format("2006-01-02 15:04:05"))
+		f.SetCellValue(sheetName, fmt.Sprintf("O%d", rowNum), listing.URL)
+	}
+
+	// Save Excel file
+	return f.SaveAs(filename)
+}
+
+
+func ExportListingsToPDF(listings []model.Listing, filename string) error {
+	pdf := gofpdf.New("P", "mm", "A4", "")
+	pdf.AddPage()
+	pdf.SetFont("Arial", "B", 14)
+
+	// Title
+	pdf.CellFormat(0, 10, "Filtered Listings", "", 1, "C", false, 0, "")
+
+	// Listing Content
+	for _, listing := range listings {
+		pdf.SetFont("Arial", "", 12)
+
+		// Add fields with proper labels in Persian
+		data := []struct {
+			Label string
+			Value string
+		}{
+			{"عنوان", listing.Title},
+			{"قیمت", fmt.Sprintf("%.2f", listing.Price)},
+			{"شهر", listing.City},
+			{"محله", listing.Neighborhood},
+			{"متراژ", fmt.Sprintf("%.2f متر مربع", listing.Area)},
+			{"تعداد اتاق خواب", strconv.Itoa(listing.Rooms)},
+			{"نوع آگهی", listing.Status},
+			{"سن بنا", listing.Age},
+			{"نوع ملک", listing.HouseType},
+			{"طبقه", strconv.Itoa(listing.Floor)},
+			{"انباری", func() string {
+				if listing.HasStorage {
+					return "دارد"
+				}
+				return "ندارد"
+			}()},
+			{"آسانسور", func() string {
+				if listing.HasElevator {
+					return "دارد"
+				}
+				return "ندارد"
+			}()},
+			{"تاریخ ایجاد", listing.CreatedAt.Format("2006-01-02 15:04:05")},
+			{"تاریخ بروزرسانی", listing.UpdatedAt.Format("2006-01-02 15:04:05")},
+			{"لینک", listing.URL},
+		}
+
+		// Print each field
+		for _, field := range data {
+			pdf.CellFormat(0, 10, fmt.Sprintf("%s: %s", field.Label, field.Value), "", 1, "", false, 0, "")
+		}
+
+		// Add spacing between listings
+		pdf.Ln(5)
+	}
+
+	// Save PDF to file
+	return pdf.OutputFileAndClose(filename)
+}
+
+
+// func uploadFileToTelegram(bot *tgbotapi.BotAPI, chatID int64, filename string) {
+// 	file, err := os.Open(filename)
+// 	if err != nil {
+// 		log.Printf("Failed to open file: %v", err)
+// 		return
+// 	}
+// 	defer file.Close()
+
+// 	doc := tgbotapi.NewDocument(chatID, tgbotapi.FileReader{
+// 		Name:   filename,
+// 		Reader: file,
+// 	})
+// 	_, err = bot.Send(doc)
+// 	if err != nil {
+// 		log.Printf("Failed to send file: %v", err)
+// 	}
+// }
