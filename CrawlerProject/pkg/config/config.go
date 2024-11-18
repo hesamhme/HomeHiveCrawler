@@ -5,13 +5,16 @@ import (
 )
 
 type Config struct {
-	Port       int    `mapstructure:"PORT"`
-	DBHost     string `mapstructure:"DB_HOST"`
-	DBPort     string `mapstructure:"DB_PORT"`
-	DBName     string `mapstructure:"DB_NAME"`
-	DBPassword string `mapstructure:"DB_PASSWORD"`
-	DBUser     string `mapstructure:"DB_USER"`
-	TGToken    string `mapstructure:"TG_TOKEN"`
+	Port              int    `mapstructure:"PORT"`
+	DBHost            string `mapstructure:"DB_HOST"`
+	DBPort            string `mapstructure:"DB_PORT"`
+	DBName            string `mapstructure:"DB_NAME"`
+	DBPassword        string `mapstructure:"DB_PASSWORD"`
+	DBUser            string `mapstructure:"DB_USER"`
+	TGToken           string `mapstructure:"TG_TOKEN"`
+	Interval          int    `mapstructure:"INTERVAL"`
+	MaxURLConcurrency int    `mapstructure:"MaxURLConcurrency"`
+	MaxAdConcurrency  int    `mapstructure:"MaxAdConcurrency"`
 }
 
 func InitConfig() (*Config, error) {
