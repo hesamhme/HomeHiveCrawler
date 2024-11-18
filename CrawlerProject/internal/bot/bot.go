@@ -3,15 +3,15 @@ package bot
 import (
 	"CrawlerProject/internal/model"
 	"CrawlerProject/internal/service"
+	"archive/zip"
+	"encoding/csv"
 	"fmt"
+	"io"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 	"time"
-	"archive/zip"
-	"io"
-	"encoding/csv"
-	"os"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"gorm.io/gorm"
@@ -267,26 +267,26 @@ var userFilteredResults = make(map[int64][]model.Listing)
 
 // Example function where you confirm filters and generate results
 func handleConfirmFilters(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
-    // Assuming you generate filteredResults based on user filters
-    filteredResults, err := service.GetFilteredListings(db, userFilters[message.Chat.ID])
-    if err != nil {
-        bot.Send(tgbotapi.NewMessage(message.Chat.ID, "خطا در جستجوی اطلاعات"))
-        return
-    }
+	// Assuming you generate filteredResults based on user filters
+	filteredResults, err := service.GetFilteredListings(db, userFilters[message.Chat.ID])
+	if err != nil {
+		bot.Send(tgbotapi.NewMessage(message.Chat.ID, "خطا در جستجوی اطلاعات"))
+		return
+	}
 
-    if len(filteredResults) == 0 {
-        bot.Send(tgbotapi.NewMessage(message.Chat.ID, "هیچ نتیجه‌ای برای فیلترهای انتخاب‌شده یافت نشد."))
-        return
-    }
+	if len(filteredResults) == 0 {
+		bot.Send(tgbotapi.NewMessage(message.Chat.ID, "هیچ نتیجه‌ای برای فیلترهای انتخاب‌شده یافت نشد."))
+		return
+	}
 
-    // Store the filtered results for this user
-    userFilteredResults[message.Chat.ID] = filteredResults
+	// Store the filtered results for this user
+	userFilteredResults[message.Chat.ID] = filteredResults
 
-    // Display the results (implementation may vary)
-    sendFormattedListings(bot, message.Chat.ID, filteredResults)
+	// Display the results (implementation may vary)
+	sendFormattedListings(bot, message.Chat.ID, filteredResults)
 
-    // Optionally, prompt user for further actions
-    bot.Send(tgbotapi.NewMessage(message.Chat.ID, "برای دانلود نتایج به صورت فایل CSV دکمه مربوطه را فشار دهید."))
+	// Optionally, prompt user for further actions
+	bot.Send(tgbotapi.NewMessage(message.Chat.ID, "برای دانلود نتایج به صورت فایل CSV دکمه مربوطه را فشار دهید."))
 }
 
 func handleHelp(bot *tgbotapi.BotAPI, update *tgbotapi.Update) int {
@@ -325,31 +325,28 @@ func handlePriceRange(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	// Set user state to expect price range input (assuming you are using userState map)
 	userState[message.Chat.ID] = "awaiting_price_range_input"
 
- 
 }
 
 func handlePriceRangeSearch(bot *tgbotapi.BotAPI, message *tgbotapi.Message, db *gorm.DB) {
-    //parseRangeInput 
-    minPrice, maxPrice, err := parseRangeInput(message.Text)
-    if err != nil {
-        bot.Send(tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("خطا: %v", err)))
-        return
-    }
+	//parseRangeInput
+	minPrice, maxPrice, err := parseRangeInput(message.Text)
+	if err != nil {
+		bot.Send(tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("خطا: %v", err)))
+		return
+	}
 
-    if _, exists := userFilters[message.Chat.ID]; !exists {
-        userFilters[message.Chat.ID] = model.Filter{}
-    }
-    filter := userFilters[message.Chat.ID] // Retrieve the value (copy)
-    filter.PriceMin = minPrice
-    filter.PriceMax = maxPrice
-    userFilters[message.Chat.ID] = filter // Store the modified value back into the map
+	if _, exists := userFilters[message.Chat.ID]; !exists {
+		userFilters[message.Chat.ID] = model.Filter{}
+	}
+	filter := userFilters[message.Chat.ID] // Retrieve the value (copy)
+	filter.PriceMin = minPrice
+	filter.PriceMax = maxPrice
+	userFilters[message.Chat.ID] = filter // Store the modified value back into the map
 
-    bot.Send(tgbotapi.NewMessage(message.Chat.ID, "رنج قیمت با موفقیت اعمال شد."))
-    // Call the function to send the filter menu
-    sendFilterMenu(bot, message.Chat.ID)
+	bot.Send(tgbotapi.NewMessage(message.Chat.ID, "رنج قیمت با موفقیت اعمال شد."))
+	// Call the function to send the filter menu
+	sendFilterMenu(bot, message.Chat.ID)
 }
-
-
 
 func handleCity(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	msg := tgbotapi.NewMessage(message.Chat.ID, "لطفاً نام شهر مورد نظر خود را وارد کنید:")
@@ -376,7 +373,7 @@ func handleNeighborhood(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	msg := tgbotapi.NewMessage(message.Chat.ID, "لطفاً نام محله مورد نظر خود را وارد کنید:")
 	bot.Send(msg)
 	userState[message.Chat.ID] = "awaiting_neighborhood_input"
- 
+
 }
 
 func handleNeighborhoodSearch(bot *tgbotapi.BotAPI, message *tgbotapi.Message, db *gorm.DB) {
@@ -399,68 +396,65 @@ func handleAreaRange(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	msg := tgbotapi.NewMessage(message.Chat.ID, "لطفاً محدوده مساحت مورد نظر خود را به صورت (شروع,پایان) وارد نمایید:")
 	bot.Send(msg)
 	userState[message.Chat.ID] = "awaiting_area_range_input"
- 
+
 }
 
 func handleAreaRangeSearch(bot *tgbotapi.BotAPI, message *tgbotapi.Message, db *gorm.DB) {
-    minArea, maxArea, err := parseRangeInput(message.Text)
-    if err != nil {
-        bot.Send(tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("خطا: %v", err)))
-        return
-    }
+	minArea, maxArea, err := parseRangeInput(message.Text)
+	if err != nil {
+		bot.Send(tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("خطا: %v", err)))
+		return
+	}
 
-    if _, exists := userFilters[message.Chat.ID]; !exists {
-        userFilters[message.Chat.ID] = model.Filter{}
-    }
-    filter := userFilters[message.Chat.ID] // Retrieve the value (copy)
-    filter.AreaMin = minArea
-    filter.AreaMax = maxArea
-    userFilters[message.Chat.ID] = filter // Store the modified value back into the map
+	if _, exists := userFilters[message.Chat.ID]; !exists {
+		userFilters[message.Chat.ID] = model.Filter{}
+	}
+	filter := userFilters[message.Chat.ID] // Retrieve the value (copy)
+	filter.AreaMin = minArea
+	filter.AreaMax = maxArea
+	userFilters[message.Chat.ID] = filter // Store the modified value back into the map
 
-    bot.Send(tgbotapi.NewMessage(message.Chat.ID, "محدوده مساحت با موفقیت اعمال شد."))
-    // Call the function to send the filter menu
-    sendFilterMenu(bot, message.Chat.ID)
+	bot.Send(tgbotapi.NewMessage(message.Chat.ID, "محدوده مساحت با موفقیت اعمال شد."))
+	// Call the function to send the filter menu
+	sendFilterMenu(bot, message.Chat.ID)
 }
-
-
 
 func handleBedroomCount(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	msg := tgbotapi.NewMessage(message.Chat.ID, "لطفاً تعداد اتاق خواب مورد نظر خود را به صورت (حداقل,حداکثر) وارد نمایید:")
 	bot.Send(msg)
 	userState[message.Chat.ID] = "awaiting_bedroom_count_input"
- 
+
 }
 
 func handleBedroomCountSearch(bot *tgbotapi.BotAPI, message *tgbotapi.Message, db *gorm.DB) {
 
-    minRoomsFloat, maxRoomsFloat, err := parseRangeInput(message.Text)
-    if err != nil {
-        bot.Send(tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("خطا: %v", err)))
-        return
-    }
+	minRoomsFloat, maxRoomsFloat, err := parseRangeInput(message.Text)
+	if err != nil {
+		bot.Send(tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("خطا: %v", err)))
+		return
+	}
 
-    minRooms := int(minRoomsFloat)
-    maxRooms := int(maxRoomsFloat)
+	minRooms := int(minRoomsFloat)
+	maxRooms := int(maxRoomsFloat)
 
-    if _, exists := userFilters[message.Chat.ID]; !exists {
-        userFilters[message.Chat.ID] = model.Filter{}
-    }
-    filter := userFilters[message.Chat.ID] // Retrieve the value (copy)
-    filter.RoomsMin = minRooms
-    filter.RoomsMax = maxRooms
-    userFilters[message.Chat.ID] = filter // Store the modified value back into the map
+	if _, exists := userFilters[message.Chat.ID]; !exists {
+		userFilters[message.Chat.ID] = model.Filter{}
+	}
+	filter := userFilters[message.Chat.ID] // Retrieve the value (copy)
+	filter.RoomsMin = minRooms
+	filter.RoomsMax = maxRooms
+	userFilters[message.Chat.ID] = filter // Store the modified value back into the map
 
-    bot.Send(tgbotapi.NewMessage(message.Chat.ID, "تعداد اتاق خواب با موفقیت اعمال شد."))
-    // Call the function to send the filter menu
-    sendFilterMenu(bot, message.Chat.ID)
+	bot.Send(tgbotapi.NewMessage(message.Chat.ID, "تعداد اتاق خواب با موفقیت اعمال شد."))
+	// Call the function to send the filter menu
+	sendFilterMenu(bot, message.Chat.ID)
 }
-
 
 func handleRentBuyMortgage(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	msg := tgbotapi.NewMessage(message.Chat.ID, "لطفاً نوع مورد نظر خود را وارد کنید: خرید/ فروش / اجاره / رهن / اجاره و رهن")
 	bot.Send(msg)
 	userState[message.Chat.ID] = "awaiting_rent_buy_mortgage_input"
- 
+
 }
 
 func handleRentBuyMortgageSearch(bot *tgbotapi.BotAPI, message *tgbotapi.Message, db *gorm.DB) {
@@ -483,7 +477,7 @@ func handleBuildingAge(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	msg := tgbotapi.NewMessage(message.Chat.ID, "لطفاً محدوده سن بنا را به صورت (حداقل,حداکثر) وارد کنید:")
 	bot.Send(msg)
 	userState[message.Chat.ID] = "awaiting_building_age_input"
- 
+
 }
 
 func handleBuildingAgeSearch(bot *tgbotapi.BotAPI, message *tgbotapi.Message, db *gorm.DB) {
@@ -518,7 +512,7 @@ func handleBuildingType(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	msg := tgbotapi.NewMessage(message.Chat.ID, "لطفاً نوع ملک مورد نظر خود را وارد کنید: آپارتمان/ویلایی/غیره")
 	bot.Send(msg)
 	userState[message.Chat.ID] = "awaiting_building_type_input"
- 
+
 }
 
 func handleBuildingTypeSearch(bot *tgbotapi.BotAPI, message *tgbotapi.Message, db *gorm.DB) {
@@ -541,38 +535,37 @@ func handleFloorRange(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	msg := tgbotapi.NewMessage(message.Chat.ID, "لطفاً محدوده طبقه را به صورت (حداقل,حداکثر) وارد کنید:")
 	bot.Send(msg)
 	userState[message.Chat.ID] = "awaiting_floor_range_input"
- 
+
 }
 
 func handleFloorRangeSearch(bot *tgbotapi.BotAPI, message *tgbotapi.Message, db *gorm.DB) {
-    minFloorFloat, maxFloorFloat, err := parseRangeInput(message.Text)
-    if err != nil {
-        bot.Send(tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("خطا: %v", err)))
-        return
-    }
+	minFloorFloat, maxFloorFloat, err := parseRangeInput(message.Text)
+	if err != nil {
+		bot.Send(tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("خطا: %v", err)))
+		return
+	}
 
-    minFloor := int(minFloorFloat)
-    maxFloor := int(maxFloorFloat)
+	minFloor := int(minFloorFloat)
+	maxFloor := int(maxFloorFloat)
 
-    if _, exists := userFilters[message.Chat.ID]; !exists {
-        userFilters[message.Chat.ID] = model.Filter{}
-    }
-    filter := userFilters[message.Chat.ID] // Retrieve the value (copy)
-    filter.FloorMin = &minFloor
-    filter.FloorMax = &maxFloor
-    userFilters[message.Chat.ID] = filter // Store the modified value back into the map
+	if _, exists := userFilters[message.Chat.ID]; !exists {
+		userFilters[message.Chat.ID] = model.Filter{}
+	}
+	filter := userFilters[message.Chat.ID] // Retrieve the value (copy)
+	filter.FloorMin = &minFloor
+	filter.FloorMax = &maxFloor
+	userFilters[message.Chat.ID] = filter // Store the modified value back into the map
 
-    bot.Send(tgbotapi.NewMessage(message.Chat.ID, "محدوده طبقه با موفقیت اعمال شد."))
-    // Call the function to send the filter menu
-    sendFilterMenu(bot, message.Chat.ID)
+	bot.Send(tgbotapi.NewMessage(message.Chat.ID, "محدوده طبقه با موفقیت اعمال شد."))
+	// Call the function to send the filter menu
+	sendFilterMenu(bot, message.Chat.ID)
 }
-
 
 func handleStorage(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	msg := tgbotapi.NewMessage(message.Chat.ID, "آیا ملک دارای انباری باشد؟ (بله/خیر)")
 	bot.Send(msg)
 	userState[message.Chat.ID] = "awaiting_storage_input"
- 
+
 }
 
 func handleStorageSearch(bot *tgbotapi.BotAPI, message *tgbotapi.Message, db *gorm.DB) {
@@ -604,7 +597,7 @@ func handleElevator(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	msg := tgbotapi.NewMessage(message.Chat.ID, "آیا ملک دارای آسانسور باشد؟ (بله/خیر)")
 	bot.Send(msg)
 	userState[message.Chat.ID] = "awaiting_elevator_input"
- 
+
 }
 
 func handleElevatorSearch(bot *tgbotapi.BotAPI, message *tgbotapi.Message, db *gorm.DB) {
@@ -636,7 +629,7 @@ func handleAdCreationDate(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 	msg := tgbotapi.NewMessage(message.Chat.ID, "لطفاً محدوده تاریخ درج آگهی را به صورت (شروع,پایان) وارد کنید (YYYY-MM-DD):")
 	bot.Send(msg)
 	userState[message.Chat.ID] = "awaiting_ad_creation_date_input"
- 
+
 }
 
 func handleAdCreationDateSearch(bot *tgbotapi.BotAPI, message *tgbotapi.Message, db *gorm.DB) {
@@ -661,40 +654,39 @@ func handleAdCreationDateSearch(bot *tgbotapi.BotAPI, message *tgbotapi.Message,
 	userFilters[message.Chat.ID] = filter
 
 	bot.Send(tgbotapi.NewMessage(message.Chat.ID, "محدوده تاریخ درج آگهی با موفقیت اعمال شد."))
-	
+
 	// Call the function to send the filter menu
 	sendFilterMenu(bot, message.Chat.ID)
 
 }
 
-
 func sendFilterMenu(bot *tgbotapi.BotAPI, chatID int64) {
-    menuMsg := tgbotapi.NewMessage(chatID, "منوی فیلترها باز است. می‌توانید فیلترهای دیگری انتخاب کنید یا \"تایید فیلترها\" را بزنید.")
-    menuMsg.ReplyMarkup = filterKeyboard
-    bot.Send(menuMsg)
+	menuMsg := tgbotapi.NewMessage(chatID, "منوی فیلترها باز است. می‌توانید فیلترهای دیگری انتخاب کنید یا \"تایید فیلترها\" را بزنید.")
+	menuMsg.ReplyMarkup = filterKeyboard
+	bot.Send(menuMsg)
 }
 
 func parseRangeInput(input string) (float64, float64, error) {
-    parts := strings.Split(input, ",")
-    if len(parts) == 1 {
+	parts := strings.Split(input, ",")
+	if len(parts) == 1 {
 
-        max, err := strconv.ParseFloat(strings.TrimSpace(parts[0]), 64)
-        if err != nil {
-            return 0, 0, fmt.Errorf("مقدار وارد شده معتبر نیست: %v", err)
-        }
-        return 0, max, nil
-    } else if len(parts) == 2 {
+		max, err := strconv.ParseFloat(strings.TrimSpace(parts[0]), 64)
+		if err != nil {
+			return 0, 0, fmt.Errorf("مقدار وارد شده معتبر نیست: %v", err)
+		}
+		return 0, max, nil
+	} else if len(parts) == 2 {
 
-        min, err1 := strconv.ParseFloat(strings.TrimSpace(parts[0]), 64)
-        max, err2 := strconv.ParseFloat(strings.TrimSpace(parts[1]), 64)
-        if err1 != nil || err2 != nil {
-            return 0, 0, fmt.Errorf("مقادیر وارد شده معتبر نیستند")
-        }
-        return min, max, nil
-    } else {
+		min, err1 := strconv.ParseFloat(strings.TrimSpace(parts[0]), 64)
+		max, err2 := strconv.ParseFloat(strings.TrimSpace(parts[1]), 64)
+		if err1 != nil || err2 != nil {
+			return 0, 0, fmt.Errorf("مقادیر وارد شده معتبر نیستند")
+		}
+		return min, max, nil
+	} else {
 
-        return 0, 0, fmt.Errorf("ورودی نامعتبر است. لطفاً فقط یک یا دو عدد وارد کنید.")
-    }
+		return 0, 0, fmt.Errorf("ورودی نامعتبر است. لطفاً فقط یک یا دو عدد وارد کنید.")
+	}
 }
 
 // Generates a CSV file with the given data
@@ -721,9 +713,9 @@ func generateCSVFile(fileName string, data []model.Listing) error {
 			listing.Title,
 			fmt.Sprintf("%f", listing.Price),
 			listing.City,
-			fmt.Sprintf("%d", listing.Bedrooms),
-			fmt.Sprintf("%f", listing.Meterage),
-			listing.AdType,
+			fmt.Sprintf("%d", listing.Rooms),
+			fmt.Sprintf("%f", listing.Area),
+			listing.HouseType,
 			listing.CreatedAt.String(),
 		}
 		if err := writer.Write(record); err != nil {
@@ -733,7 +725,6 @@ func generateCSVFile(fileName string, data []model.Listing) error {
 
 	return nil
 }
-
 
 func createZipFile(zipFileName, fileName string) error {
 	zipFile, err := os.Create(zipFileName)
@@ -773,35 +764,35 @@ func createZipFile(zipFileName, fileName string) error {
 }
 
 func handleDownloadCSV(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
-    // Retrieve filtered results for the user
-    filteredResults, exists := userFilteredResults[message.Chat.ID]
-    if !exists || len(filteredResults) == 0 {
-        bot.Send(tgbotapi.NewMessage(message.Chat.ID, "هیچ نتیجه‌ای برای دانلود یافت نشد. لطفاً ابتدا جستجو کنید."))
-        return
-    }
+	// Retrieve filtered results for the user
+	filteredResults, exists := userFilteredResults[message.Chat.ID]
+	if !exists || len(filteredResults) == 0 {
+		bot.Send(tgbotapi.NewMessage(message.Chat.ID, "هیچ نتیجه‌ای برای دانلود یافت نشد. لطفاً ابتدا جستجو کنید."))
+		return
+	}
 
-    csvFileName := "results.csv"
-    zipFileName := "results.zip"
+	csvFileName := "results.csv"
+	zipFileName := "results.zip"
 
-    // Generate CSV with the retrieved filtered results
-    err := generateCSVFile(csvFileName, filteredResults)
-    if err != nil {
-        bot.Send(tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("خطا در ایجاد فایل CSV: %v", err)))
-        return
-    }
+	// Generate CSV with the retrieved filtered results
+	err := generateCSVFile(csvFileName, filteredResults)
+	if err != nil {
+		bot.Send(tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("خطا در ایجاد فایل CSV: %v", err)))
+		return
+	}
 
-    // Create ZIP file
-    err = createZipFile(zipFileName, csvFileName)
-    if err != nil {
-        bot.Send(tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("خطا در ایجاد فایل ZIP: %v", err)))
-        return
-    }
+	// Create ZIP file
+	err = createZipFile(zipFileName, csvFileName)
+	if err != nil {
+		bot.Send(tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("خطا در ایجاد فایل ZIP: %v", err)))
+		return
+	}
 
-    // Send the ZIP file
-    file := tgbotapi.NewDocument(message.Chat.ID, tgbotapi.FilePath(zipFileName))
-    _, err = bot.Send(file)
-    if err != nil {
-        bot.Send(tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("خطا در ارسال فایل: %v", err)))
-        return
-    }
+	// Send the ZIP file
+	file := tgbotapi.NewDocument(message.Chat.ID, tgbotapi.FilePath(zipFileName))
+	_, err = bot.Send(file)
+	if err != nil {
+		bot.Send(tgbotapi.NewMessage(message.Chat.ID, fmt.Sprintf("خطا در ارسال فایل: %v", err)))
+		return
+	}
 }
