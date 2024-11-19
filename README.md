@@ -5,8 +5,7 @@
 ## Technologies Used
 <span><img src="https://img.shields.io/badge/Docker-2CA5E0?style=flat&logo=docker&logoColor=white" /></span>
 <span><img src="https://img.shields.io/badge/PostgreSQL-316192?style=flat&logo=postgresql&logoColor=white" /></span>
-<span><img src="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.pngwing.com%2Fen%2Ffree-png-azyiz&psig=AOvVaw1Fl0kjTZwicG8PvTkD1V9z&ust=1732088774717000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCNCG5tTz54kDFQAAAAAdAAAAABAE
-" /></span>
+<span><img src="https://img.shields.io/badge/Golang-1.17-blue" /></span>
 
 
 ## What is this project?
