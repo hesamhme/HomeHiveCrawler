@@ -2,14 +2,12 @@ package model
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type Filter struct {
-	FilterID        uint      `gorm:"primaryKey"`
-	UserID          uuid.UUID `gorm:"not null"`
-	User            User      `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
+	FilterID        uint  `gorm:"primaryKey"`
+	UserID          int64 `gorm:"not null"`
+	User            User  `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
 	PriceMin        float64
 	PriceMax        float64
 	City            string `gorm:"size:100"`
