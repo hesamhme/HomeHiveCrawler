@@ -26,9 +26,7 @@ func sendFormattedListings(bot *tgbotapi.BotAPI, chatID int64, results []model.L
 				"تاریخ ایجاد: %s\n"+
 				"تاریخ بروزرسانی: %s\n"+
 				"تصاویر: %s\n"+
-				"[لینک](%s)\n"+
-			"دانلود zip"+
-			"ارسال به ایمیل",
+				"[لینک](%s)",
 			result.Title,
 			result.Price,
 			result.City,
@@ -57,7 +55,16 @@ func sendFormattedListings(bot *tgbotapi.BotAPI, chatID int64, results []model.L
 			result.Images,
 			result.Link)
 
+		// Create an inline keyboard for bookmarking and downloading as ZIP
+		markup := tgbotapi.NewInlineKeyboardMarkup(
+			tgbotapi.NewInlineKeyboardRow(
+				tgbotapi.NewInlineKeyboardButtonData("بوکمارک کردن", fmt.Sprintf("bookmark_%d", result.ListingID)),
+			),
+		)
+
 		msg := tgbotapi.NewMessage(chatID, msgText)
+		msg.ParseMode = "Markdown"
+		msg.ReplyMarkup = markup
 		if _, err := bot.Send(msg); err == nil {
 			fmt.Println("Result sent to Telegram successfully")
 		} else {

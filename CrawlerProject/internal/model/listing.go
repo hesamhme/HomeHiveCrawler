@@ -5,12 +5,12 @@ import (
 )
 
 type Listing struct {
-	ListingID    uint   `gorm:"primaryKey"`
+	ListingID    uint    `gorm:"primaryKey"`
 	Title        string  `gorm:"size:2048;not null"`
 	Price        float64 `gorm:"not null"`
 	Location     string  `gorm:"size:512"`
 	Description  string  `gorm:"type:text"`
-	Link         string  `gorm:"size:1048;unique;not null"`
+	Link         string  `gorm:"size:1048;not null"`
 	Seller       string  `gorm:"size:100"`
 	City         string  `gorm:"size:100"`
 	Neighborhood string  `gorm:"size:100"`
@@ -25,5 +25,5 @@ type Listing struct {
 	AdCreateDate string  `gorm:"size:50"` // Keeping as string as per your data example
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
-	Images       []string   `gorm:"-"`    // Placeholder for associated images
+	Images       []string `gorm:"-"` // Placeholder for associated images
 }

@@ -3,7 +3,7 @@ package main
 import (
     "CrawlerProject/internal/bot"
     "CrawlerProject/internal/repository"
-    "CrawlerProject/internal/service"
+    //"CrawlerProject/internal/service"
     "CrawlerProject/pkg/config"
     "CrawlerProject/pkg/logger"
     p "CrawlerProject/pkg/postgres"
@@ -28,8 +28,8 @@ func main() {
         logger.Logger.Error().Err(err).Msg("error while migrating tables")
     }
 
-    // repositories
-    service.ReadFromJson(localDB)
+    // // repositories
+    // service.ReadFromJson(localDB)
 
     log.Println("Database tables created/migrated successfully!")
 
