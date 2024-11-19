@@ -5,51 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7582c815-5ba6-4e3d-8f37-344c07422975" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/CrawlerProject/Internal/crawler/Crawler.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CrawlerProject/Internal/middleware/example.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CrawlerProject/Internal/monitoring/example.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CrawlerProject/Internal/repository/database.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CrawlerProject/Internal/scheduler/example.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CrawlerProject/Internal/service/example.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CrawlerProject/Internal/user/example.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CrawlerProject/Internal/utils/example.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CrawlerProject/pkg/config/config.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CrawlerProject/pkg/logger/logger.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CrawlerProject/pkg/postgres/conn.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CrawlerProject/pkg/utils/example.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/Configs/Config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/CrawlerProject/configs/config.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/Configs/Database.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/CrawlerProject/configs/database.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/Configs/Telegram.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/CrawlerProject/configs/telegram.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/Docs/example" beforeDir="false" afterPath="$PROJECT_DIR$/CrawlerProject/Internal/migrations/example" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/Internal/Crawler/Crawler.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/Internal/Middleware/example.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/Internal/Migrations/example" beforeDir="false" afterPath="$PROJECT_DIR$/CrawlerProject/docs/example" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/Internal/Model/admin_log.go" beforeDir="false" afterPath="$PROJECT_DIR$/CrawlerProject/Internal/model/admin_log.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/Internal/Model/bookmark.go" beforeDir="false" afterPath="$PROJECT_DIR$/CrawlerProject/Internal/model/bookmark.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/Internal/Model/crawler_log.go" beforeDir="false" afterPath="$PROJECT_DIR$/CrawlerProject/Internal/model/crawler_log.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/Internal/Model/filter.go" beforeDir="false" afterPath="$PROJECT_DIR$/CrawlerProject/Internal/model/filter.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/Internal/Model/listing.go" beforeDir="false" afterPath="$PROJECT_DIR$/CrawlerProject/Internal/model/listing.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/Internal/Model/search_history.go" beforeDir="false" afterPath="$PROJECT_DIR$/CrawlerProject/Internal/model/search_history.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/Internal/Model/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/CrawlerProject/Internal/model/user.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/Internal/Monitoring/example.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/Internal/Repository/example.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/Internal/Scheduler/example.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/Internal/Service/example.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/Internal/User/example.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/Internal/Utils/example.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/Internal/Worker/example.go" beforeDir="false" afterPath="$PROJECT_DIR$/CrawlerProject/Internal/worker/example.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/Scripts/build.sh" beforeDir="false" afterPath="$PROJECT_DIR$/CrawlerProject/scripts/build.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/Scripts/migrate.sh" beforeDir="false" afterPath="$PROJECT_DIR$/CrawlerProject/scripts/migrate.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/Test/example" beforeDir="false" afterPath="$PROJECT_DIR$/CrawlerProject/test/example" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/CrawlerProject/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/CrawlerProject/go.sum" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/CrawlerProject/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/pkg/Config/config.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/pkg/Logger/logger.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/pkg/Postgres/conn.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CrawlerProject/pkg/Utils/example.go" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -75,22 +31,23 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.go.formatter.settings.were.checked": "true",
-    "RunOnceActivity.go.migrated.go.modules.settings": "true",
-    "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
-    "git-widget-placeholder": "development",
-    "go.import.settings.migrated": "true",
-    "go.sdk.automatically.set": "true",
-    "last_opened_file_path": "/home/mehrshad/Desktop/q/project/quera_g11_project1",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "onboarding.tips.debug.path": "D:/Quera-GoLang/BootCamp/Projects/quera_g11_project1/main.go"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.formatter.settings.were.checked&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.migrated.go.modules.settings&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.modules.automatic.dependencies.download&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.modules.go.list.on.any.changes.was.set&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;6e2b086d&quot;,
+    &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
+    &quot;go.sdk.automatically.set&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/abtin&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;onboarding.tips.debug.path&quot;: &quot;D:/Quera-GoLang/BootCamp/Projects/quera_g11_project1/main.go&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\Quera-GoLang\BootCamp\Projects\quera_g11_project1\CrawlerProject" />
@@ -99,8 +56,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-gosdk-5df93f7ad4aa-df9ad98b711f-org.jetbrains.plugins.go.sharedIndexes.bundled-GO-242.23339.24" />
-        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-GO-242.23339.24" />
+        <option value="bundled-gosdk-33c477a475b1-e0158606a674-org.jetbrains.plugins.go.sharedIndexes.bundled-GO-241.15989.157" />
+        <option value="bundled-js-predefined-1d06a55b98c1-91d5c284f522-JavaScript-GO-241.15989.157" />
       </set>
     </attachedChunks>
   </component>

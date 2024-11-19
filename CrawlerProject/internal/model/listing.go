@@ -26,4 +26,4 @@ type Listing struct {
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 	Images       []string `gorm:"-"` // Placeholder for associated images
-}
+
