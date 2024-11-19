@@ -35,8 +35,11 @@ func main() {
 
 	// repositories
 
-	log.Println("Database tables created/migrated successfully!")
-	service.SetDefaultDB(localDB)
+  log.Println("Database tables created/migrated successfully!")
+  service.SetDefaultDB(localDB)
+
+  // // repositories
+  // service.ReadFromJson(localDB)
 
 	// telegram bot
 
@@ -60,4 +63,5 @@ func main() {
 	if err := crawler.Start(ctx); err != nil {
 		log.Fatal(err)
 	}
+
 }
