@@ -5,7 +5,7 @@
 ## Technologies Used
 <span><img src="https://img.shields.io/badge/Docker-2CA5E0?style=flat&logo=docker&logoColor=white" /></span>
 <span><img src="https://img.shields.io/badge/PostgreSQL-316192?style=flat&logo=postgresql&logoColor=white" /></span>
-<span><img src="https://img.shields.io/badge/Golang-1.17-blue" /></span>
+<span><img src="https://img.shields.io/badge/Golang-1.23-blue" /></span>
 
 
 ## What is this project?
@@ -20,7 +20,8 @@ This project is a comprehensive real estate listing platform, designed to allow 
 - Administrative and Crawler log tracking for better data management.
 
 
-how to use this project:
+## how to use this project:
+
 first make a clone or create a new branch.
 then you may up docker copose with this command 
 ```
@@ -40,9 +41,12 @@ therefore you should see thin on terminal output
 
 > Database tables created/migrated successfully!  
 
+## ERD diagram
+[HERE](erd_maket.pdf)
 
 ## Telegram Bot
 
 User can communicate with our telegram bot to get ads
 
 [Telegram Bot 🔗](https://t.me/quera11_bot)
+
