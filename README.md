@@ -1,45 +1,42 @@
-# quera Go boorcamp project1 group 11
-### this project gonna be Legend (wait for it) ...
+# HomeHive Crawler
 
+**HomeHive Crawler** is an advanced real estate data scraping and filtering tool designed to streamline the process of discovering, managing, and analyzing property listings. With a focus on efficiency and scalability, this project serves as a foundation for building data-driven real estate platforms.
 
-## Technologies Used
-<span><img src="https://img.shields.io/badge/Docker-2CA5E0?style=flat&logo=docker&logoColor=white" /></span>
-<span><img src="https://img.shields.io/badge/PostgreSQL-316192?style=flat&logo=postgresql&logoColor=white" /></span>
-<span><img src="https://img.shields.io/badge/Golang-1.23-blue" /></span>
+## Key Features
 
+- **Real Estate Data Aggregation**: Scrapes property listings from various sources (e.g., Divar, Sheypoor).
+- **Powerful Filtering**: Supports dynamic, multi-criteria filtering (e.g., price range, city, neighborhood, bedrooms, etc.).
+- **Telegram Bot Integration**: Provides an intuitive interface for users to interact, search, and view listings directly from Telegram.
+- **Database Management**: Uses PostgreSQL for storing and managing property data with optimized models.
+- **Dynamic Updates**: Detects and updates existing property records to ensure accurate and up-to-date information.
+- **Scalability**: Designed with modular architecture for easy feature extension and deployment.
 
-## What is this project?
-This project is a comprehensive real estate listing platform, designed to allow users to browse, filter, and save real estate listings with integrated features such as notifications, bookmarks, and search history management.
+## Tech Stack
 
-## Features
-- User management with different roles.
-- Listing creation, update, and viewing.
-- Advanced filtering and search capabilities.
-- Bookmarking listings for later viewing.
-- Notification system for alerts based on user filters.
-- Administrative and Crawler log tracking for better data management.
+- **Backend**: Go (Golang) <span><img src="https://img.shields.io/badge/Golang-1.23-blue" /></span>
+- **Database**: PostgreSQL <span><img src="https://img.shields.io/badge/PostgreSQL-316192?style=flat&logo=postgresql&logoColor=white" /></span>
+- **Bot Framework**: Telegram Bot API  <span><img src="https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white" /></span>
+- **Deployment**: Docker-friendly for seamless integration <span><img src="https://img.shields.io/badge/Docker-2CA5E0?style=flat&logo=docker&logoColor=white" /></span>
 
+## How It Works
 
-## how to use this project:
+1. **Data Crawling**: Gathers property listings in real-time or from provided datasets.
+2. **Data Storage**: Saves data in PostgreSQL, ensuring it’s well-structured and ready for queries.
+3. **User Interaction**: Allows users to filter properties via Telegram bot commands and view results instantly.
+4. **Updates & Notifications**: Keeps listings current and can notify users of matching properties.
 
-first make a clone or create a new branch.
-then you may up docker copose with this command 
+## Getting Started
+
+Clone the repository, configure your `.env` file with database credentials and Telegram bot token, and run the project with:
+
+```bash
+docker-compose up --build
 ```
-docker-compose up -d 
+Let **HomeHive Crawler** take the complexity out of property hunting, making it smarter and simpler for everyone! 🚀
 
-```
-next step you will create a ``` .env ``` file in project directory and fill it with the following information in ``` sample_env.txt ``` file.
+If needed, I can guide you on creating the file manually or assist further. &#8203;:contentReference[oaicite:0]{index=0}&#8203;
 
-then when you should run main.go to migrate the project
 
-```
-go run main.go
-
-```
-
-therefore you should see thin on terminal output
-
-> Database tables created/migrated successfully!  
 
 ## ERD diagram
 [HERE](erd_maket.pdf)
