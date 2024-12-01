@@ -34,8 +34,6 @@ docker-compose up --build
 ```
 Let **HomeHive Crawler** take the complexity out of property hunting, making it smarter and simpler for everyone! 🚀
 
-If needed, I can guide you on creating the file manually or assist further. &#8203;:contentReference[oaicite:0]{index=0}&#8203;
-
 
 
 ## ERD diagram
